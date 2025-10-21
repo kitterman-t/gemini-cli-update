@@ -12,7 +12,7 @@
 # Author:             AI Assistant (Enhanced for Tim)
 # Date Created:       October 3, 2025
 # Last Modified:      October 4, 2025
-# Version:            2.2.0
+# Version:            2.3.0
 # License:            MIT
 # ============================================================================
 #
@@ -208,6 +208,12 @@
 #
 # VERSION HISTORY:
 # ---------------
+# v2.3.0 (2025-10-14): Enhanced force reinstall/update capabilities
+#                      - Added force reinstall flags to all installation commands
+#                      - Enhanced Homebrew installation if not present
+#                      - Added Google Cloud SDK installation if not present
+#                      - Improved Node.js installation with NVM fallback
+#                      - All components now force update regardless of current status
 # v2.2.0 (2025-10-04): Added Google Cloud SDK components update
 #                      - Added gcloud components update with --quiet flag
 #                      - Added Google Cloud SDK version detection and tracking
@@ -456,7 +462,7 @@ create_backup() {
     {
         echo "=== GEMINI CLI UPDATE BACKUP ==="
         echo "Timestamp: $TIMESTAMP"
-        echo "Script Version: 2.2.0"
+        echo "Script Version: 2.3.0"
         echo ""
         echo "=== SOFTWARE VERSIONS ==="
         echo "Node.js: $ORIGINAL_NODE_VERSION"
@@ -496,12 +502,13 @@ update_homebrew() {
     if command_exists brew; then
         log "Updating Homebrew package manager..." "INFO"
         execute_with_log "brew update" "Updating Homebrew package database"
+        execute_with_log "brew upgrade" "Upgrading all Homebrew packages to latest versions"
         log "Homebrew updated successfully" "SUCCESS"
         echo ""
     else
-        log "Homebrew not found. Skipping Homebrew-based updates." "WARNING"
-        log "Consider installing Homebrew for better package management" "INFO"
-        ((WARNINGS++))
+        log "Homebrew not found. Installing Homebrew..." "INFO"
+        execute_with_log '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"' "Installing Homebrew package manager"
+        log "Homebrew installed successfully" "SUCCESS"
         echo ""
     fi
 }
@@ -523,9 +530,10 @@ update_gcloud_components() {
         fi
         echo ""
     else
-        log "Google Cloud SDK not found. Skipping gcloud updates." "WARNING"
-        log "Consider installing Google Cloud SDK for cloud development" "INFO"
-        ((WARNINGS++))
+        log "Google Cloud SDK not found. Installing Google Cloud SDK..." "INFO"
+        execute_with_log 'curl https://sdk.cloud.google.com | bash' "Installing Google Cloud SDK"
+        execute_with_log 'source ~/.bashrc && gcloud components update --quiet' "Updating Google Cloud SDK components after installation"
+        log "Google Cloud SDK installed and updated successfully" "SUCCESS"
         echo ""
     fi
 }
@@ -534,18 +542,20 @@ update_gcloud_components() {
 # Purpose: Update Node.js to latest version using Homebrew
 upgrade_node_homebrew() {
     if command_exists brew; then
-        log "Upgrading Node.js via Homebrew..." "INFO"
-        execute_with_log "brew upgrade node" "Upgrading Node.js via Homebrew"
+        log "Installing/upgrading Node.js via Homebrew..." "INFO"
+        execute_with_log "brew install --force node" "Installing/upgrading Node.js via Homebrew (force reinstall)"
         
         # Refresh shell environment to get new Node.js version
         if command_exists node; then
             UPDATED_NODE_VERSION=$(node -v 2>/dev/null || echo "Unknown")
-            log "Node.js upgraded to: $UPDATED_NODE_VERSION" "SUCCESS"
+            log "Node.js installed/upgraded to: $UPDATED_NODE_VERSION" "SUCCESS"
         fi
         echo ""
     else
-        log "Homebrew not available for Node.js upgrade" "WARNING"
-        log "Node.js will be updated via npm instead" "INFO"
+        log "Homebrew not available for Node.js installation" "WARNING"
+        log "Installing Node.js via official installer..." "INFO"
+        execute_with_log 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash' "Installing NVM (Node Version Manager)"
+        execute_with_log 'source ~/.bashrc && nvm install node --latest-npm' "Installing latest Node.js via NVM"
         ((WARNINGS++))
     fi
 }
@@ -553,12 +563,12 @@ upgrade_node_homebrew() {
 # Function: Update npm to latest version
 # Purpose: Ensure npm is at the latest version
 update_npm() {
-    log "Updating npm to latest version..." "INFO"
-    execute_with_log "npm install -g npm@latest" "Updating npm to latest version"
+    log "Installing/updating npm to latest version..." "INFO"
+    execute_with_log "npm install -g npm@latest --force" "Installing/updating npm to latest version (force reinstall)"
     
     if command_exists npm; then
         UPDATED_NPM_VERSION=$(npm -v 2>/dev/null || echo "Unknown")
-        log "npm updated to: $UPDATED_NPM_VERSION" "SUCCESS"
+        log "npm installed/updated to: $UPDATED_NPM_VERSION" "SUCCESS"
     fi
     echo ""
 }
@@ -566,12 +576,12 @@ update_npm() {
 # Function: Update Gemini CLI to latest version
 # Purpose: Install or update Gemini CLI to latest version
 update_gemini_cli() {
-    log "Updating Gemini CLI to latest version..." "INFO"
-    execute_with_log "npm install -g @google/gemini-cli@latest" "Updating Gemini CLI to latest version"
+    log "Installing/updating Gemini CLI to latest version..." "INFO"
+    execute_with_log "npm install -g @google/gemini-cli@latest --force" "Installing/updating Gemini CLI to latest version (force reinstall)"
     
     if command_exists gemini; then
         UPDATED_GEMINI_VERSION=$(gemini --version 2>/dev/null || echo "Unknown")
-        log "Gemini CLI updated to: $UPDATED_GEMINI_VERSION" "SUCCESS"
+        log "Gemini CLI installed/updated to: $UPDATED_GEMINI_VERSION" "SUCCESS"
     fi
     echo ""
 }
@@ -579,20 +589,20 @@ update_gemini_cli() {
 # Function: Install Google Generative AI dependencies
 # Purpose: Install required dependencies for Gemini CLI functionality
 install_gemini_dependencies() {
-    log "Installing Google Generative AI dependencies..." "INFO"
+    log "Installing/updating Google Generative AI dependencies..." "INFO"
     
-    # Install globally for CLI access
-    execute_with_log "npm install -g @google/generative-ai" "Installing Google Generative AI package globally"
+    # Install globally for CLI access (force reinstall)
+    execute_with_log "npm install -g @google/generative-ai --force" "Installing/updating Google Generative AI package globally (force reinstall)"
     
     # Install locally in current project (if in a project directory)
     if [[ -f "package.json" ]]; then
-        execute_with_log "npm install @google/generative-ai" "Installing Google Generative AI package locally"
+        execute_with_log "npm install @google/generative-ai --force" "Installing/updating Google Generative AI package locally (force reinstall)"
         log "Local project dependencies updated" "SUCCESS"
     else
         log "No package.json found - skipping local installation" "INFO"
     fi
     
-    log "Google Generative AI dependencies installed successfully" "SUCCESS"
+    log "Google Generative AI dependencies installed/updated successfully" "SUCCESS"
     echo ""
 }
 
@@ -626,7 +636,7 @@ enable_ide_integration() {
 # Purpose: Update all globally installed npm packages
 update_global_packages() {
     log "Updating all global npm packages..." "INFO"
-    execute_with_log "npm update -g" "Updating all global npm packages" "true"  # Allow failure for this one
+    execute_with_log "npm update -g --force" "Updating all global npm packages (force update)" "true"  # Allow failure for this one
     log "Global packages update completed" "SUCCESS"
     echo ""
 }
@@ -716,7 +726,7 @@ generate_summary() {
         echo "                    GEMINI CLI UPDATE SUMMARY"
         echo "============================================================================="
         echo "Timestamp: $TIMESTAMP"
-        echo "Script Version: 2.2.0"
+        echo "Script Version: 2.3.0"
         echo "Log file: $LOG_FILE"
         echo ""
         echo "VERSION CHANGES:"
@@ -830,7 +840,7 @@ main() {
         echo "                    ENHANCED GEMINI CLI UPDATE SCRIPT"
         echo "============================================================================="
         echo "Started: $TIMESTAMP"
-        echo "Script Version: 2.2.0"
+        echo "Script Version: 2.3.0"
         echo "Log file: $LOG_FILE"
         echo "User: $USER"
         echo "System: $(uname -a)"
@@ -845,7 +855,7 @@ main() {
     echo "                    ENHANCED GEMINI CLI UPDATE SCRIPT"
     echo "============================================================================="
     echo "Started: $TIMESTAMP"
-        echo "Script Version: 2.2.0"
+        echo "Script Version: 2.3.0"
     echo "Log file: $LOG_FILE"
     echo "Verbose mode: $VERBOSE"
     echo "Dry run mode: $DRY_RUN"

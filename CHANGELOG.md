@@ -25,6 +25,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 - Nothing yet
 
+## [2.3.0] - 2025-10-14
+
+### Added
+- Force reinstall capabilities for all components regardless of installation status
+- Automatic Homebrew installation if not present
+- Automatic Google Cloud SDK installation if not present
+- NVM (Node Version Manager) fallback for Node.js installation
+- Enhanced dependency management with force update flags
+
+### Changed
+- All installation commands now use force reinstall flags
+- Improved error handling for missing dependencies
+- Enhanced logging for installation/update processes
+- Updated version tracking to reflect force updates
+
+### Fixed
+- Resolved issues with components not updating when already installed
+- Improved compatibility with various installation states
+- Enhanced fallback mechanisms for missing package managers
+
+### Security
+- Maintained secure installation practices with force flags
+- All operations continue to be logged for audit purposes
+
 ## [2.2.0] - 2025-10-14
 
 ### Added
