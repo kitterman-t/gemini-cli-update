@@ -1,14 +1,30 @@
-# Gemini CLI Update Script
+# Cross-Platform Gemini CLI Update Script
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Windows](https://img.shields.io/badge/Platform-Windows-blue.svg)](https://www.microsoft.com/windows/)
 [![macOS](https://img.shields.io/badge/Platform-macOS-blue.svg)](https://www.apple.com/macos/)
+[![Linux](https://img.shields.io/badge/Platform-Linux-green.svg)](https://www.linux.org/)
+[![PowerShell](https://img.shields.io/badge/Shell-PowerShell-purple.svg)](https://docs.microsoft.com/powershell/)
 [![Bash](https://img.shields.io/badge/Shell-Bash-green.svg)](https://www.gnu.org/software/bash/)
 
-A comprehensive automation script for updating Node.js, npm, Gemini CLI, and Google Cloud SDK on macOS systems. Features extensive logging, error handling, backup creation, and detailed reporting capabilities.
+A comprehensive cross-platform automation script for updating Node.js, npm, Gemini CLI, and Google Cloud SDK on Windows, macOS, and Linux systems. Features extensive logging, error handling, backup creation, and detailed reporting capabilities.
 
 ## 🚀 Features
 
-- **Comprehensive Updates**: Automatically updates Node.js, npm, Gemini CLI, and Google Cloud SDK
+### Cross-Platform Support
+- **Windows**: PowerShell 5.1+ with Chocolatey/Scoop package managers
+- **macOS**: Bash 3.2+ with Homebrew package manager  
+- **Linux**: Bash 3.2+ with apt/yum/dnf package managers
+- **Automatic OS Detection**: Scripts automatically detect and adapt to your platform
+
+### Comprehensive Updates
+- **Node.js**: Latest version via platform-specific package managers
+- **npm**: Force reinstall to latest version globally
+- **Gemini CLI**: Force reinstall to latest version with IDE integration
+- **Google Cloud SDK**: Platform-specific installation and updates
+- **Dependencies**: Google Generative AI packages and global npm packages
+
+### Advanced Features
 - **Extensive Logging**: Detailed logging with timestamps, error tracking, and performance metrics
 - **Backup System**: Creates automatic backups before updates for rollback capability
 - **Error Handling**: Graceful failure handling with detailed error reporting
@@ -19,63 +35,113 @@ A comprehensive automation script for updating Node.js, npm, Gemini CLI, and Goo
 
 ## 📋 Prerequisites
 
-- **macOS** (tested on macOS Sequoia 15.0+)
-- **Bash 3.2+** (included with macOS)
-- **Homebrew** (recommended for Node.js management)
+### Windows
+- **Windows 10/11** (tested on Windows 10 1903+ and Windows 11)
+- **PowerShell 5.1+** (included with Windows 10/11)
+- **Chocolatey** (auto-installed if missing)
+- **Scoop** (auto-installed if missing)
 - **Internet connection** (for downloading updates)
-- **Appropriate user permissions** (sudo may be required for some operations)
+- **Administrator privileges** (for system-wide installations)
+
+### macOS
+- **macOS Sequoia 15.0+** (tested on macOS Sequoia 15.0+)
+- **Bash 3.2+** (included with macOS)
+- **Homebrew** (auto-installed if missing)
+- **Internet connection** (for downloading updates)
+- **Appropriate user permissions** (sudo may be required)
+
+### Linux
+- **Ubuntu 18.04+**, **CentOS 7+**, **RHEL 7+**, **Fedora 30+**
+- **Bash 3.2+** (included with most distributions)
+- **apt/yum/dnf** package manager
+- **Internet connection** (for downloading updates)
+- **sudo privileges** (for system-wide installations)
 
 ## 🛠️ Installation
 
-### Option 1: Direct Download
-```bash
-# Download the script
-curl -O https://raw.githubusercontent.com/your-username/gemini-cli-update/main/update_gemini_cli.sh
-
-# Make it executable
-chmod +x update_gemini_cli.sh
-```
-
-### Option 2: Clone Repository
+### Option 1: Clone Repository
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/gemini-cli-update.git
+git clone https://github.com/kitterman-t/gemini-cli-update.git
 cd gemini-cli-update
 
-# Make the script executable
-chmod +x update_gemini_cli.sh
+# Make scripts executable (Unix systems)
+chmod +x update_gemini_cli.sh update_gemini_cli_original.sh
+```
+
+### Option 2: Direct Download
+```bash
+# Download the cross-platform launcher
+curl -O https://raw.githubusercontent.com/kitterman-t/gemini-cli-update/main/update_gemini_cli.sh
+
+# Download the PowerShell script (Windows)
+curl -O https://raw.githubusercontent.com/kitterman-t/gemini-cli-update/main/update_gemini_cli.ps1
+
+# Download the Bash script (macOS/Linux)
+curl -O https://raw.githubusercontent.com/kitterman-t/gemini-cli-update/main/update_gemini_cli_original.sh
+
+# Make executable (Unix systems)
+chmod +x update_gemini_cli.sh update_gemini_cli_original.sh
 ```
 
 ## 🎯 Usage
 
-### Basic Usage
+### Cross-Platform Launcher
+The main script automatically detects your operating system and runs the appropriate version:
+
 ```bash
-# Run the update script
+# Run the cross-platform launcher
 ./update_gemini_cli.sh
+
+# With options
+./update_gemini_cli.sh --verbose --dry-run
 ```
 
-### Advanced Options
-```bash
-# Dry run (preview changes without executing)
-./update_gemini_cli.sh --dry-run
+### Platform-Specific Usage
 
-# Verbose output (detailed execution information)
-./update_gemini_cli.sh --verbose
+#### Windows (PowerShell)
+```powershell
+# Basic usage
+.\update_gemini_cli.ps1
+
+# With verbose output
+.\update_gemini_cli.ps1 -Verbose
+
+# Dry run (preview changes)
+.\update_gemini_cli.ps1 -DryRun
 
 # Combine options
-./update_gemini_cli.sh --verbose --dry-run
+.\update_gemini_cli.ps1 -Verbose -DryRun
 
 # Show help
-./update_gemini_cli.sh --help
+.\update_gemini_cli.ps1 -Help
+```
+
+#### macOS/Linux (Bash)
+```bash
+# Basic usage
+./update_gemini_cli_original.sh
+
+# With verbose output
+./update_gemini_cli_original.sh --verbose
+
+# Dry run (preview changes)
+./update_gemini_cli_original.sh --dry-run
+
+# Combine options
+./update_gemini_cli_original.sh --verbose --dry-run
+
+# Show help
+./update_gemini_cli_original.sh --help
 ```
 
 ### Command Line Options
 
-| Option | Description |
-|--------|-------------|
-| `--verbose`, `-v` | Enable verbose output with detailed execution information |
-| `--dry-run`, `-d` | Preview changes without executing them |
-| `--help`, `-h` | Show help message and usage information |
+| Option | Windows | macOS/Linux | Description |
+|--------|---------|--------------|-------------|
+| `-Verbose`, `-v` | ✅ | `--verbose`, `-v` | Enable verbose output with detailed execution information |
+| `-DryRun`, `-d` | ✅ | `--dry-run`, `-d` | Preview changes without executing them |
+| `-Help`, `-h` | ✅ | `--help`, `-h` | Show help message and usage information |
 
 ## 📊 What Gets Updated
 
