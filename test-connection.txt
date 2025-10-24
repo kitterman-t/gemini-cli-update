@@ -1,0 +1,14 @@
+GitHub Connection Test
+=====================
+
+This is a test file to verify that the AI assistant can successfully:
+- Create new files in the repository
+- Commit changes to Git
+- Push updates to GitHub
+
+Test Details:
+- Repository: https://github.com/kitterman-t/gemini-cli-update
+- Test Date: $(date)
+- Purpose: Verify GitHub integration and automated workflow
+
+If you can see this file in your GitHub repository, the connection is working correctly!
