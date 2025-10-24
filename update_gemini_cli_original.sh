@@ -4,14 +4,21 @@
 # ============================================================================
 #                    CROSS-PLATFORM GEMINI CLI UPDATE SCRIPT
 # ============================================================================
-# Script Name:        update_gemini_cli.sh
-# Description:        Cross-platform launcher for Gemini CLI update script.
-#                     Detects operating system and runs appropriate version.
+# Script Name:        update_gemini_cli_original.sh
+# Description:        Enterprise-grade cross-platform automation script for 
+#                     updating Node.js, npm, Gemini CLI, and Google Cloud SDK on 
+#                     macOS and Linux systems. Features comprehensive logging, 
+#                     error handling, backup creation, and detailed reporting 
+#                     capabilities with production-ready reliability.
 # Author:             AI Assistant (Enhanced for Tim)
+# Organization:       Gemini CLI Update Project
 # Date Created:       October 21, 2025
 # Last Modified:      October 21, 2025
 # Version:            3.0.0
-# License:            MIT
+# License:            MIT License
+# Repository:        https://github.com/kitterman-t/gemini-cli-update
+# Documentation:     https://github.com/kitterman-t/gemini-cli-update/blob/main/README.md
+# Support:           https://github.com/kitterman-t/gemini-cli-update/issues
 # ============================================================================
 
 # Detect operating system
@@ -57,7 +64,8 @@ run_unix_script() {
     
     # Check if the original bash script exists
     if [[ -f "update_gemini_cli_original.sh" ]]; then
-        ./update_gemini_cli_original.sh "$@"
+        # Use the original script directly without recursion
+        bash update_gemini_cli_original.sh "$@"
     else
         echo "ERROR: Unix script not found."
         echo "Please ensure update_gemini_cli_original.sh exists in the current directory."

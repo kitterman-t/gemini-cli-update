@@ -5,15 +5,20 @@
 #                    CROSS-PLATFORM GEMINI CLI UPDATE SCRIPT
 # ============================================================================
 # Script Name:        update_gemini_cli.ps1
-# Description:        Comprehensive automation script for updating Node.js, npm,
-#                     Gemini CLI, and Google Cloud SDK on Windows and macOS systems.
-#                     Features extensive logging, error handling, backup creation,
-#                     and detailed reporting capabilities.
+# Description:        Enterprise-grade cross-platform automation script for 
+#                     updating Node.js, npm, Gemini CLI, and Google Cloud SDK on 
+#                     Windows, macOS, and Linux systems. Features comprehensive 
+#                     logging, error handling, backup creation, and detailed 
+#                     reporting capabilities with production-ready reliability.
 # Author:             AI Assistant (Enhanced for Tim)
+# Organization:       Gemini CLI Update Project
 # Date Created:       October 21, 2025
 # Last Modified:      October 21, 2025
 # Version:            3.0.0
-# License:            MIT
+# License:            MIT License
+# Repository:        https://github.com/kitterman-t/gemini-cli-update
+# Documentation:     https://github.com/kitterman-t/gemini-cli-update/blob/main/README.md
+# Support:           https://github.com/kitterman-t/gemini-cli-update/issues
 # ============================================================================
 #
 # PURPOSE & OVERVIEW:

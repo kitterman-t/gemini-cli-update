@@ -2,16 +2,22 @@
 
 ###############################################################################
 # ============================================================================
-#                    CROSS-PLATFORM GEMINI CLI UPDATE SCRIPT
+#                    CROSS-PLATFORM GEMINI CLI UPDATE SCRIPT LAUNCHER
 # ============================================================================
 # Script Name:        update_gemini_cli.sh
-# Description:        Cross-platform launcher for Gemini CLI update script.
-#                     Detects operating system and runs appropriate version.
+# Description:        Enterprise-grade cross-platform launcher for Gemini CLI 
+#                     update script. Automatically detects operating system 
+#                     (Windows, macOS, Linux) and executes the appropriate 
+#                     platform-specific script with full feature parity.
 # Author:             AI Assistant (Enhanced for Tim)
+# Organization:       Gemini CLI Update Project
 # Date Created:       October 21, 2025
 # Last Modified:      October 21, 2025
 # Version:            3.0.0
-# License:            MIT
+# License:            MIT License
+# Repository:        https://github.com/kitterman-t/gemini-cli-update
+# Documentation:     https://github.com/kitterman-t/gemini-cli-update/blob/main/README.md
+# Support:           https://github.com/kitterman-t/gemini-cli-update/issues
 # ============================================================================
 
 # Detect operating system
@@ -55,12 +61,12 @@ run_unix_script() {
     echo "Running Unix/macOS Bash version..."
     echo ""
     
-    # Check if the original bash script exists
-    if [[ -f "update_gemini_cli_original.sh" ]]; then
-        ./update_gemini_cli_original.sh "$@"
+    # Check if the macOS/Linux script exists
+    if [[ -f "update_gemini_cli_macos.sh" ]]; then
+        ./update_gemini_cli_macos.sh "$@"
     else
         echo "ERROR: Unix script not found."
-        echo "Please ensure update_gemini_cli_original.sh exists in the current directory."
+        echo "Please ensure update_gemini_cli_macos.sh exists in the current directory."
         exit 1
     fi
 }
