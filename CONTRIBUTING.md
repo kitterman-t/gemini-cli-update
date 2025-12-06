@@ -1,6 +1,13 @@
 # Contributing to Gemini CLI Update Script
 
-Thank you for your interest in contributing to the Gemini CLI Update Script! This document provides guidelines and information for contributors.
+Thank you for your interest in contributing to the Gemini CLI Update Script! This document provides comprehensive guidelines and information for contributors.
+
+**Last Updated:** December 6, 2025  
+**Script Version:** 3.0.1
+
+## 🎯 Contribution Philosophy
+
+We welcome contributions that improve the script's reliability, usability, documentation, and cross-platform compatibility. All contributions should maintain the high standards of code quality, comprehensive error handling, and detailed logging that make this script production-ready.
 
 ## 🤝 How to Contribute
 

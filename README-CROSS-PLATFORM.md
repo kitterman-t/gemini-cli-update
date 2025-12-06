@@ -9,6 +9,8 @@
 
 A comprehensive cross-platform automation script for updating Node.js, npm, Gemini CLI, and Google Cloud SDK on Windows, macOS, and Linux systems. Features extensive logging, error handling, backup creation, and detailed reporting capabilities.
 
+**Version:** 3.0.1 | **Last Updated:** December 6, 2025 | **Status:** Production Ready
+
 ## 🚀 Features
 
 ### Cross-Platform Support
@@ -66,7 +68,7 @@ git clone https://github.com/kitterman-t/gemini-cli-update.git
 cd gemini-cli-update
 
 # Make scripts executable (Unix systems)
-chmod +x update_gemini_cli.sh update_gemini_cli_original.sh
+chmod +x update_gemini_cli.sh update_gemini_cli_macos.sh update_gemini_cli_original.sh
 ```
 
 ### Option 2: Direct Download
@@ -78,10 +80,11 @@ curl -O https://raw.githubusercontent.com/kitterman-t/gemini-cli-update/main/upd
 curl -O https://raw.githubusercontent.com/kitterman-t/gemini-cli-update/main/update_gemini_cli.ps1
 
 # Download the Bash script (macOS/Linux)
+curl -O https://raw.githubusercontent.com/kitterman-t/gemini-cli-update/main/update_gemini_cli_macos.sh
 curl -O https://raw.githubusercontent.com/kitterman-t/gemini-cli-update/main/update_gemini_cli_original.sh
 
 # Make executable (Unix systems)
-chmod +x update_gemini_cli.sh update_gemini_cli_original.sh
+chmod +x update_gemini_cli.sh update_gemini_cli_macos.sh update_gemini_cli_original.sh
 ```
 
 ## 🎯 Usage
@@ -119,20 +122,29 @@ The main script automatically detects your operating system and runs the appropr
 
 #### macOS/Linux (Bash)
 ```bash
-# Basic usage
-./update_gemini_cli_original.sh
+# Basic usage (recommended - uses launcher)
+./update_gemini_cli.sh
+
+# Direct execution of macOS/Linux script
+./update_gemini_cli_macos.sh
 
 # With verbose output
-./update_gemini_cli_original.sh --verbose
+./update_gemini_cli.sh --verbose
+# or
+./update_gemini_cli_macos.sh --verbose
 
 # Dry run (preview changes)
-./update_gemini_cli_original.sh --dry-run
+./update_gemini_cli.sh --dry-run
+# or
+./update_gemini_cli_macos.sh --dry-run
 
 # Combine options
-./update_gemini_cli_original.sh --verbose --dry-run
+./update_gemini_cli.sh --verbose --dry-run
 
 # Show help
-./update_gemini_cli_original.sh --help
+./update_gemini_cli.sh --help
+# or
+./update_gemini_cli_macos.sh --help
 ```
 
 ### Command Line Options
@@ -352,6 +364,13 @@ sudo apt-get install -y nodejs
 - **Network security**: HTTPS for all downloads
 
 ## 📝 Version History
+
+### v3.0.1 (2025-12-06) - Production Optimization & Documentation Enhancement
+- ✅ **Enhanced documentation** with comprehensive function comments
+- ✅ **Improved script headers** with detailed purpose and usage information
+- ✅ **Updated all documentation files** with current information
+- ✅ **Version consistency** across all scripts and documentation
+- ✅ **Production tested** and verified with zero errors
 
 ### v3.0.0 (2025-10-21)
 - ✅ **Cross-platform support** for Windows, macOS, and Linux

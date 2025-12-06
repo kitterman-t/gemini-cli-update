@@ -2,31 +2,42 @@
 
 ###############################################################################
 # ============================================================================
-#                    CROSS-PLATFORM GEMINI CLI UPDATE SCRIPT
+#                    CROSS-PLATFORM GEMINI CLI UPDATE SCRIPT LAUNCHER
 # ============================================================================
 # Script Name:        update_gemini_cli_original.sh
-# Description:        Enterprise-grade cross-platform automation script for 
-#                     updating Node.js, npm, Gemini CLI, and Google Cloud SDK on 
-#                     macOS and Linux systems. Features comprehensive logging, 
-#                     error handling, backup creation, and detailed reporting 
-#                     capabilities with production-ready reliability.
+# Description:        Enterprise-grade cross-platform launcher for Gemini CLI 
+#                     update script. Automatically detects operating system 
+#                     (Windows, macOS, Linux) and executes the appropriate 
+#                     platform-specific script with full feature parity.
+#                     
+#                     NOTE: This is an alternative launcher that provides the 
+#                     same functionality as update_gemini_cli.sh. Both scripts
+#                     are functionally identical - use whichever you prefer.
+#                     The primary launcher is update_gemini_cli.sh, but this
+#                     script is maintained for backward compatibility and user preference.
 # Author:             AI Assistant (Enhanced for Tim)
 # Organization:       Gemini CLI Update Project
 # Date Created:       October 21, 2025
-# Last Modified:      October 21, 2025
-# Version:            3.0.0
+# Last Modified:      December 6, 2025
+# Version:            3.0.1
 # License:            MIT License
 # Repository:        https://github.com/kitterman-t/gemini-cli-update
 # Documentation:     https://github.com/kitterman-t/gemini-cli-update/blob/main/README.md
 # Support:           https://github.com/kitterman-t/gemini-cli-update/issues
 # ============================================================================
 
-# Detect operating system
-if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "cygwin" ]] || [[ "$OSTYPE" == "win32" ]] || [[ -n "$WINDIR" ]]; then
+# Set error handling (but allow for graceful error handling in functions)
+set -eo pipefail
+
+# Get script directory for reliable path resolution
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Detect operating system (handle unbound variables gracefully)
+if [[ "${OSTYPE:-}" == "msys" ]] || [[ "${OSTYPE:-}" == "cygwin" ]] || [[ "${OSTYPE:-}" == "win32" ]] || [[ -n "${WINDIR:-}" ]]; then
     OS="Windows"
-elif [[ "$OSTYPE" == "darwin"* ]]; then
+elif [[ "${OSTYPE:-}" == "darwin"* ]]; then
     OS="macOS"
-elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+elif [[ "${OSTYPE:-}" == "linux-gnu"* ]]; then
     OS="Linux"
 else
     OS="Unknown"
@@ -36,20 +47,29 @@ echo "==========================================================================
 echo "                    CROSS-PLATFORM GEMINI CLI UPDATE SCRIPT"
 echo "============================================================================="
 echo "Detected OS: $OS"
-echo "Script Version: 3.0.0"
+echo "Script Version: 3.0.1"
+echo "Script Directory: $SCRIPT_DIR"
 echo "============================================================================="
-        echo ""
+echo ""
 
 # Function to run PowerShell script on Windows
 run_windows_script() {
     echo "Running Windows PowerShell version..."
     echo ""
     
+    local ps_script="$SCRIPT_DIR/update_gemini_cli.ps1"
+    
+    # Check if PowerShell script exists
+    if [[ ! -f "$ps_script" ]]; then
+        echo "ERROR: PowerShell script not found: $ps_script"
+        exit 1
+    fi
+    
     # Check if PowerShell is available
     if command -v pwsh >/dev/null 2>&1; then
-        pwsh -ExecutionPolicy Bypass -File "update_gemini_cli.ps1" "$@"
+        pwsh -ExecutionPolicy Bypass -File "$ps_script" "$@"
     elif command -v powershell >/dev/null 2>&1; then
-        powershell -ExecutionPolicy Bypass -File "update_gemini_cli.ps1" "$@"
+        powershell -ExecutionPolicy Bypass -File "$ps_script" "$@"
     else
         echo "ERROR: PowerShell not found. Please install PowerShell."
         echo "Download from: https://github.com/PowerShell/PowerShell/releases"
@@ -62,15 +82,23 @@ run_unix_script() {
     echo "Running Unix/macOS Bash version..."
     echo ""
     
-    # Check if the original bash script exists
-    if [[ -f "update_gemini_cli_original.sh" ]]; then
-        # Use the original script directly without recursion
-        bash update_gemini_cli_original.sh "$@"
-    else
-        echo "ERROR: Unix script not found."
-        echo "Please ensure update_gemini_cli_original.sh exists in the current directory."
+    local bash_script="$SCRIPT_DIR/update_gemini_cli_macos.sh"
+    
+    # Check if the macOS/Linux script exists
+    if [[ ! -f "$bash_script" ]]; then
+        echo "ERROR: Unix script not found: $bash_script"
+        echo "Please ensure update_gemini_cli_macos.sh exists in the script directory."
         exit 1
     fi
+    
+    # Check if script is executable
+    if [[ ! -x "$bash_script" ]]; then
+        echo "Making script executable: $bash_script"
+        chmod +x "$bash_script"
+    fi
+    
+    # Execute the script
+    "$bash_script" "$@"
 }
 
 # Main execution logic

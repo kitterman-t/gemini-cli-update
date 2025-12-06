@@ -13,12 +13,55 @@
 # Author:             AI Assistant (Enhanced for Tim)
 # Organization:       Gemini CLI Update Project
 # Date Created:       October 21, 2025
-# Last Modified:      October 21, 2025
-# Version:            3.0.0
+# Last Modified:      December 6, 2025
+# Version:            3.0.1
 # License:            MIT License
 # Repository:        https://github.com/kitterman-t/gemini-cli-update
 # Documentation:     https://github.com/kitterman-t/gemini-cli-update/blob/main/README.md
 # Support:           https://github.com/kitterman-t/gemini-cli-update/issues
+# ============================================================================
+#
+# PURPOSE & OVERVIEW:
+# ------------------
+# This script provides a comprehensive, production-ready solution for maintaining
+# an up-to-date development environment with Node.js, npm, Gemini CLI, and Google
+# Cloud SDK on macOS and Linux systems. It features enterprise-grade reliability,
+# extensive logging, error handling, backup creation, and detailed reporting.
+#
+# KEY CAPABILITIES:
+# -----------------
+# - Automatic detection and installation of package managers (Homebrew, NVM)
+# - Force reinstall capabilities for all components (ensures latest versions)
+# - Comprehensive logging system with timestamps and error tracking
+# - Automatic backup creation before updates for rollback capability
+# - Graceful error handling with detailed error reporting and recovery
+# - Version tracking and comparison (before/after for each component)
+# - Dry-run mode for previewing changes without execution
+# - Verbose output mode for detailed debugging information
+# - Automatic cleanup of stale temporary directories
+# - Fallback retry mechanisms for transient failures
+#
+# WHAT THIS SCRIPT UPDATES:
+# -------------------------
+# 1. Homebrew Package Manager - Updates and upgrades all packages
+# 2. Google Cloud SDK - Installs/updates with component management
+# 3. Node.js - Force reinstall to latest version via Homebrew/NVM
+# 4. npm - Force reinstall to latest version globally
+# 5. Gemini CLI - Force reinstall to latest version with IDE integration
+# 6. Google Generative AI - Installs dependencies globally and locally
+# 7. Global npm Packages - Updates all globally installed packages
+#
+# LOGGING SYSTEM:
+# ---------------
+# Creates comprehensive logs in: ./gemini-update-logs/
+# - update_YYYYMMDD_HHMMSS.log     # Detailed execution log
+# - summary_YYYYMMDD_HHMMSS.txt    # Human-readable summary
+# - backups/backup_YYYYMMDD_HHMMSS.txt # Configuration backup
+#
+# USAGE:
+# ------
+# ./update_gemini_cli_macos.sh [--verbose] [--dry-run] [--help]
+#
 # ============================================================================
 
 # Set strict error handling
@@ -46,7 +89,7 @@ WARNINGS=0
 # Function: Show help message
 show_help() {
     cat << EOF
-Cross-Platform Gemini CLI Update Script v3.0.0
+Cross-Platform Gemini CLI Update Script v3.0.1
 
 USAGE:
     ./update_gemini_cli_macos.sh [OPTIONS]
@@ -98,6 +141,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Function: Create necessary directories
+# Purpose: Ensures all required directories exist for logging and backups
+# Creates: LOG_DIR (for log files) and BACKUP_DIR (for configuration backups)
+# Notes: Uses mkdir -p to create parent directories if needed, idempotent operation
 create_directories() {
     log "Creating required directories..." "INFO"
     mkdir -p "$LOG_DIR"
@@ -106,6 +152,14 @@ create_directories() {
 }
 
 # Function: Log messages with timestamp and level
+# Purpose: Centralized logging function that writes to both console and log file
+# Parameters:
+#   $1: Message text to log
+#   $2: Log level (INFO, SUCCESS, WARNING, ERROR, DEBUG) - defaults to INFO
+# Behavior:
+#   - Colors console output based on log level for better readability
+#   - Always writes to log file regardless of verbose mode
+#   - DEBUG messages only shown in console when verbose mode is enabled
 log() {
     local message="$1"
     local level="${2:-INFO}"
@@ -141,6 +195,16 @@ log() {
 }
 
 # Function: Execute command with logging and error handling
+# Purpose: Executes shell commands with comprehensive logging and error handling
+# Parameters:
+#   $1: Command string to execute
+#   $2: Description of what the command does (for logging)
+#   $3: Allow failure flag (true/false) - if true, continues on error instead of exiting
+# Behavior:
+#   - In dry-run mode: logs what would be executed without running
+#   - In normal mode: executes command, logs output, handles errors gracefully
+#   - Tracks error count for final reporting
+# Returns: 0 on success, non-zero on failure (unless allow_failure=true)
 execute_with_log() {
     local command="$1"
     local description="${2:-Executing command}"
@@ -174,12 +238,20 @@ execute_with_log() {
     fi
 }
 
-# Function: Check if command exists
+# Function: Check if command exists in PATH
+# Purpose: Safely checks if a command/executable is available in the system PATH
+# Parameters:
+#   $1: Command name to check (e.g., "node", "npm", "gemini")
+# Returns: 0 if command exists, non-zero if not found
+# Usage: Used throughout script to verify dependencies before attempting to use them
 command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
 # Function: Get system information for logging
+# Purpose: Captures comprehensive system information for troubleshooting and audit trails
+# Logs: OS version, architecture, user, paths, platform details
+# Notes: This information helps diagnose platform-specific issues and track execution context
 get_system_info() {
     log "Gathering system information..." "DEBUG"
     
@@ -197,6 +269,12 @@ EOF
 }
 
 # Function: Get current software versions and log them
+# Purpose: Captures current versions of all target software before updates
+# Checks: Node.js, npm, Gemini CLI, Google Cloud SDK
+# Behavior: 
+#   - Sets ORIGINAL_*_VERSION global variables for later comparison
+#   - Logs warnings if software is not installed
+#   - Increments WARNINGS counter for missing software (non-fatal)
 get_versions() {
     log "Checking current software versions..." "INFO"
     
@@ -245,6 +323,10 @@ get_versions() {
 }
 
 # Function: Create comprehensive backup of current state
+# Purpose: Creates a snapshot of current configuration for rollback capability
+# Captures: Software versions, global npm packages, system info, environment variables, npm config
+# Location: Saves to BACKUP_DIR with timestamp in filename
+# Notes: Essential for recovery if updates cause issues - allows manual rollback
 create_backup() {
     log "Creating backup of current configuration..." "INFO"
     
@@ -253,7 +335,7 @@ create_backup() {
     cat > "$backup_file" << EOF
 === GEMINI CLI UPDATE BACKUP ===
 Timestamp: $TIMESTAMP
-Script Version: 3.0.0
+Script Version: 3.0.1
 Platform: $(uname -s)
 
 === SOFTWARE VERSIONS ===
@@ -283,7 +365,12 @@ EOF
     log "Backup created: $backup_file" "SUCCESS"
 }
 
-# Function: Update Homebrew
+# Function: Update Homebrew package manager
+# Purpose: Ensures Homebrew is up-to-date and upgrades all installed packages
+# Behavior:
+#   - If Homebrew exists: updates package database and upgrades all packages
+#   - If Homebrew missing: automatically installs it via official installer
+# Notes: Homebrew is the primary package manager for macOS, used for Node.js installation
 update_homebrew() {
     if command_exists brew; then
         log "Updating Homebrew package manager..." "INFO"
@@ -300,6 +387,11 @@ update_homebrew() {
 }
 
 # Function: Update Google Cloud SDK components
+# Purpose: Updates Google Cloud SDK and all its components to latest versions
+# Behavior:
+#   - If gcloud exists: updates all components with --quiet flag (auto-answers prompts)
+#   - If gcloud missing: installs via official installer, then updates components
+# Notes: Uses --quiet flag to prevent interactive prompts during automated execution
 update_gcloud_components() {
     if command_exists gcloud; then
         log "Updating Google Cloud SDK components..." "INFO"
@@ -322,7 +414,13 @@ update_gcloud_components() {
     fi
 }
 
-# Function: Install/update Node.js
+# Function: Install/update Node.js via Homebrew
+# Purpose: Ensures Node.js is installed and at the latest version
+# Behavior:
+#   - Uses Homebrew with --force flag to ensure latest version (force reinstall)
+#   - Falls back to NVM installation if Homebrew is unavailable
+#   - Refreshes shell environment to pick up new Node.js version
+# Notes: --force flag ensures update even if Node.js is already installed
 upgrade_node_homebrew() {
     if command_exists brew; then
         log "Installing/upgrading Node.js via Homebrew..." "INFO"
@@ -344,61 +442,168 @@ upgrade_node_homebrew() {
 }
 
 # Function: Update npm to latest version
+# Purpose: Updates npm package manager to the latest available version
+# Behavior:
+#   - Cleans up stale temporary directories from previous failed installations
+#   - Attempts update with --force flag first (ensures clean reinstall)
+#   - Falls back to update without --force if first attempt fails
+#   - Handles ENOTEMPTY errors by cleaning temporary directories
+# Notes: Includes cleanup step to prevent ENOTEMPTY errors from stale npm temp dirs
 update_npm() {
     log "Installing/updating npm to latest version..." "INFO"
-    execute_with_log "npm install -g npm@latest --force" "Installing/updating npm to latest version (force reinstall)"
     
+    # Clean up any stale npm directories from previous failed installations
     if command_exists npm; then
-        UPDATED_NPM_VERSION=$(npm -v 2>/dev/null || echo "Unknown")
-        log "npm installed/updated to: $UPDATED_NPM_VERSION" "SUCCESS"
+        local npm_prefix=$(npm config get prefix 2>/dev/null || echo "$HOME/.nvm/versions/node/$(node -v)")
+        local npm_path="$npm_prefix/lib/node_modules"
+        log "Cleaning up stale npm directories at: $npm_path" "DEBUG"
+        
+        # Remove any .npm-*, .update-*, and .*-* temporary directories
+        if [[ -d "$npm_path" ]]; then
+            find "$npm_path" -name ".npm-*" -type d -exec rm -rf {} + 2>/dev/null || true
+            find "$npm_path" -name ".update-*" -type d -exec rm -rf {} + 2>/dev/null || true
+        fi
+    fi
+    
+    # Try to update npm with force flag
+    if execute_with_log "npm install -g npm@latest --force" "Installing/updating npm to latest version (force reinstall)" "true"; then
+        if command_exists npm; then
+            UPDATED_NPM_VERSION=$(npm -v 2>/dev/null || echo "Unknown")
+            log "npm installed/updated to: $UPDATED_NPM_VERSION" "SUCCESS"
+        fi
+    else
+        log "npm update failed with force flag, trying without force..." "WARNING"
+        # Try again without force flag as fallback
+        if execute_with_log "npm install -g npm@latest" "Installing/updating npm to latest version (without force)" "true"; then
+            if command_exists npm; then
+                UPDATED_NPM_VERSION=$(npm -v 2>/dev/null || echo "Unknown")
+                log "npm installed/updated to: $UPDATED_NPM_VERSION" "SUCCESS"
+            fi
+        else
+            log "npm update failed completely. Current version: $(npm -v 2>/dev/null || echo 'Unknown')" "WARNING"
+            ((WARNINGS++))
+        fi
     fi
     echo ""
 }
 
 # Function: Update Gemini CLI to latest version
+# Purpose: Installs or updates Google's Gemini CLI tool to the latest version
+# Behavior:
+#   - Cleans up stale temporary directories before attempting update
+#   - Uses --force flag to ensure latest version (force reinstall)
+#   - Falls back to update without --force if first attempt fails
+#   - Verifies installation by checking gemini command availability
+# Notes: Gemini CLI is the primary tool this script maintains
 update_gemini_cli() {
     log "Installing/updating Gemini CLI to latest version..." "INFO"
-    execute_with_log "npm install -g @google/gemini-cli@latest --force" "Installing/updating Gemini CLI to latest version (force reinstall)"
     
-    if command_exists gemini; then
-        UPDATED_GEMINI_VERSION=$(gemini --version 2>/dev/null || echo "Unknown")
-        log "Gemini CLI installed/updated to: $UPDATED_GEMINI_VERSION" "SUCCESS"
+    # Clean up any stale directories before attempting update
+    if command_exists npm; then
+        local npm_prefix=$(npm config get prefix 2>/dev/null || echo "$HOME/.nvm/versions/node/$(node -v)")
+        local npm_path="$npm_prefix/lib/node_modules"
+        if [[ -d "$npm_path" ]]; then
+            find "$npm_path" -name ".gemini-cli-*" -type d -exec rm -rf {} + 2>/dev/null || true
+            find "$npm_path" -name ".update-*" -type d -exec rm -rf {} + 2>/dev/null || true
+        fi
+    fi
+    
+    # Try to update Gemini CLI with force flag
+    if execute_with_log "npm install -g @google/gemini-cli@latest --force" "Installing/updating Gemini CLI to latest version (force reinstall)" "true"; then
+        if command_exists gemini; then
+            UPDATED_GEMINI_VERSION=$(gemini --version 2>/dev/null || echo "Unknown")
+            log "Gemini CLI installed/updated to: $UPDATED_GEMINI_VERSION" "SUCCESS"
+        fi
+    else
+        log "Gemini CLI update failed with force flag, trying without force..." "WARNING"
+        # Try again without force flag as fallback
+        if execute_with_log "npm install -g @google/gemini-cli@latest" "Installing/updating Gemini CLI to latest version (without force)" "true"; then
+            if command_exists gemini; then
+                UPDATED_GEMINI_VERSION=$(gemini --version 2>/dev/null || echo "Unknown")
+                log "Gemini CLI installed/updated to: $UPDATED_GEMINI_VERSION" "SUCCESS"
+            fi
+        else
+            log "Gemini CLI update failed completely. Current version: $(gemini --version 2>/dev/null || echo 'Unknown')" "WARNING"
+            ((WARNINGS++))
+        fi
     fi
     echo ""
 }
 
 # Function: Install Google Generative AI dependencies
+# Purpose: Installs required Google Generative AI packages for Gemini CLI functionality
+# Behavior:
+#   - Installs @google/generative-ai globally for CLI access
+#   - Optionally installs locally if package.json exists in current directory
+#   - Cleans up stale temporary directories before installation
+#   - Uses --force flag to ensure latest versions
+# Notes: These dependencies are required for Gemini CLI to function properly
 install_gemini_dependencies() {
     log "Installing/updating Google Generative AI dependencies..." "INFO"
     
+    # Clean up any stale directories before attempting update
+    if command_exists npm; then
+        local npm_prefix=$(npm config get prefix 2>/dev/null || echo "$HOME/.nvm/versions/node/$(node -v)")
+        local npm_path="$npm_prefix/lib/node_modules"
+        if [[ -d "$npm_path" ]]; then
+            find "$npm_path" -name ".update-*" -type d -exec rm -rf {} + 2>/dev/null || true
+            find "$npm_path" -name ".*-*" -type d -exec rm -rf {} + 2>/dev/null || true
+        fi
+    fi
+    
     # Install globally for CLI access (force reinstall)
-    execute_with_log "npm install -g @google/generative-ai --force" "Installing/updating Google Generative AI package globally (force reinstall)"
+    if execute_with_log "npm install -g @google/generative-ai --force" "Installing/updating Google Generative AI package globally (force reinstall)" "true"; then
+        log "Google Generative AI package installed globally" "SUCCESS"
+    else
+        log "Google Generative AI install failed with force flag, trying without force..." "WARNING"
+        # Try again without force flag as fallback
+        if execute_with_log "npm install -g @google/generative-ai" "Installing/updating Google Generative AI package globally (without force)" "true"; then
+            log "Google Generative AI package installed globally" "SUCCESS"
+        else
+            log "Google Generative AI install failed completely" "WARNING"
+            ((WARNINGS++))
+        fi
+    fi
     
     # Install locally in current project (if in a project directory)
     if [[ -f "package.json" ]]; then
-        execute_with_log "npm install @google/generative-ai --force" "Installing/updating Google Generative AI package locally (force reinstall)"
-        log "Local project dependencies updated" "SUCCESS"
+        if execute_with_log "npm install @google/generative-ai --force" "Installing/updating Google Generative AI package locally (force reinstall)" "true"; then
+            log "Local project dependencies updated" "SUCCESS"
+        else
+            log "Local installation failed, trying without force..." "WARNING"
+            execute_with_log "npm install @google/generative-ai" "Installing/updating Google Generative AI package locally (without force)" "true"
+        fi
     else
         log "No package.json found - skipping local installation" "INFO"
     fi
     
-    log "Google Generative AI dependencies installed/updated successfully" "SUCCESS"
+    log "Google Generative AI dependencies installation completed" "SUCCESS"
     echo ""
 }
 
 # Function: Enable Gemini CLI IDE integration
+# Purpose: Configures Gemini CLI for IDE integration (currently skipped due to known issue)
+# Behavior:
+#   - Currently skips automatic IDE enable due to hanging issue with gemini /ide enable
+#   - Provides instructions for manual IDE integration configuration
+#   - Logs warning (expected behavior) to inform user
+# Notes: 
+#   - Known issue: gemini /ide enable command hangs due to configuration format changes
+#   - Users can manually run 'gemini /ide enable' after script completion if needed
+#   - See docs/ide-integration-issue.md for detailed information
 enable_ide_integration() {
     log "Configuring Gemini CLI IDE integration..." "INFO"
     
     if command_exists gemini; then
-        # Enable IDE integration
-        if execute_with_log "gemini /ide enable" "Enabling Gemini CLI IDE integration" "true"; then
-            log "IDE integration configured successfully" "SUCCESS"
-        else
-            log "IDE integration may need manual configuration" "WARNING"
-            log "Run 'gemini /ide enable' manually if needed" "INFO"
-            ((WARNINGS++))
-        fi
+        # Skip IDE enable command as it hangs due to configuration format changes
+        # Users can manually configure IDE integration if needed
+        log "Skipping automatic IDE integration (known issue with hanging)" "WARNING"
+        log "To enable IDE integration manually, run: gemini /ide enable" "INFO"
+        log "For more information, visit: https://geminicli.com/docs/get-started/configuration/" "INFO"
+        ((WARNINGS++))
+        
+        # Note: IDE integration can be manually configured after script completion
+        log "IDE integration can be configured manually after script completion" "INFO"
     else
         log "Gemini CLI not found - skipping IDE integration" "ERROR"
         ((ERRORS++))
@@ -408,6 +613,9 @@ enable_ide_integration() {
 }
 
 # Function: Update all global npm packages
+# Purpose: Updates all globally installed npm packages to their latest versions
+# Behavior: Uses npm update -g --force to update all global packages
+# Notes: This ensures all global tools are up-to-date, not just the primary ones
 update_global_packages() {
     log "Updating all global npm packages..." "INFO"
     execute_with_log "npm update -g --force" "Updating all global npm packages (force update)" "true"
@@ -416,6 +624,10 @@ update_global_packages() {
 }
 
 # Function: Verify all installations are working
+# Purpose: Validates that all updated software is properly installed and accessible
+# Checks: Node.js, npm, Gemini CLI, Google Cloud SDK
+# Behavior: Verifies each tool is in PATH and can report its version
+# Notes: Increments ERROR counter if any tool is missing (indicates installation failure)
 verify_installations() {
     log "Verifying all installations..." "INFO"
     echo ""
@@ -459,6 +671,12 @@ verify_installations() {
 }
 
 # Function: Test Gemini CLI functionality
+# Purpose: Performs actual API test to verify Gemini CLI is working correctly
+# Behavior: Sends a test query to Gemini API to confirm connectivity and configuration
+# Notes: 
+#   - May show warning if API key is not configured (non-fatal)
+#   - Provides instructions for API key setup if test fails
+#   - This is the final verification that everything is working end-to-end
 test_gemini_cli() {
     log "Testing Gemini CLI functionality..." "INFO"
     
@@ -479,6 +697,10 @@ test_gemini_cli() {
 }
 
 # Function: Generate comprehensive summary report
+# Purpose: Creates human-readable summary of update process and results
+# Contents: Version changes, statistics, file locations, next steps, verification commands
+# Location: Saved to LOG_DIR with timestamp in filename
+# Notes: Provides quick overview without needing to read full detailed log
 generate_summary() {
     log "Generating update summary..." "INFO"
     
@@ -489,7 +711,7 @@ generate_summary() {
                     GEMINI CLI UPDATE SUMMARY
 =============================================================================
 Timestamp: $TIMESTAMP
-Script Version: 3.0.0
+Script Version: 3.0.1
 Platform: $(uname -s)
 Log file: $LOG_FILE
 
@@ -547,6 +769,9 @@ EOF
 }
 
 # Function: Clean up old log files
+# Purpose: Maintains log directory by keeping only the most recent log files
+# Behavior: Keeps last 10 log files and summary files, removes older ones
+# Notes: Prevents log directory from growing unbounded, maintains useful history
 cleanup_old_logs() {
     log "Cleaning up old log files (keeping last 10)..." "INFO"
     
@@ -558,6 +783,14 @@ cleanup_old_logs() {
 }
 
 # Function: Main script execution
+# Purpose: Orchestrates the entire update process in the correct sequence
+# Flow:
+#   1. Setup (directories, logging, system info, backup)
+#   2. Version detection (capture current state)
+#   3. Updates (package managers, Node.js, npm, Gemini CLI, dependencies)
+#   4. Verification (test installations and functionality)
+#   5. Reporting (generate summary, cleanup, final status)
+# Notes: This is the entry point called at the end of the script
 main() {
     # Create log directory
     create_directories
@@ -567,7 +800,7 @@ main() {
                     CROSS-PLATFORM GEMINI CLI UPDATE SCRIPT
 =============================================================================
 Started: $TIMESTAMP
-Script Version: 3.0.0
+Script Version: 3.0.1
 Platform: $(uname -s)
 Log file: $LOG_FILE
 Verbose mode: $VERBOSE

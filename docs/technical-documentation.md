@@ -2,21 +2,37 @@
 
 This document provides detailed technical information about the Gemini CLI Update Script architecture, implementation, and maintenance.
 
+**Last Updated:** December 6, 2025  
+**Script Version:** 3.0.1  
+**Status:** Production Ready
+
+## 📋 Document Overview
+
+This technical documentation is designed for developers, system administrators, and contributors who need to understand the internal workings of the Gemini CLI Update Script. It covers architecture, implementation details, maintenance procedures, and best practices.
+
 ## 🏗️ Architecture Overview
 
 ### Script Structure
 
 ```
-update_gemini_cli.sh
-├── Configuration & Initialization
-├── Utility Functions
-├── Version Detection & Tracking
-├── Backup & Recovery Functions
-├── Update Functions
-├── Verification & Testing Functions
-├── Reporting & Maintenance Functions
-├── Command Line Argument Parsing
-└── Main Execution Function
+Cross-Platform Launcher Scripts:
+├── update_gemini_cli.sh              # Primary cross-platform launcher
+├── update_gemini_cli_original.sh     # Alternative launcher (same functionality)
+
+Platform-Specific Scripts:
+├── update_gemini_cli_macos.sh         # macOS/Linux implementation
+│   ├── Configuration & Initialization
+│   ├── Utility Functions (logging, error handling)
+│   ├── Version Detection & Tracking
+│   ├── Backup & Recovery Functions
+│   ├── Update Functions (Homebrew, Node.js, npm, Gemini CLI)
+│   ├── Verification & Testing Functions
+│   ├── Reporting & Maintenance Functions
+│   ├── Command Line Argument Parsing
+│   └── Main Execution Function
+│
+└── update_gemini_cli.ps1             # Windows PowerShell implementation
+    └── (Similar structure to macOS/Linux script)
 ```
 
 ### Core Components

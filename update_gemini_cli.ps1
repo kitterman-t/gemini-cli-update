@@ -13,8 +13,8 @@
 # Author:             AI Assistant (Enhanced for Tim)
 # Organization:       Gemini CLI Update Project
 # Date Created:       October 21, 2025
-# Last Modified:      October 21, 2025
-# Version:            3.0.0
+# Last Modified:      December 6, 2025
+# Version:            3.0.1
 # License:            MIT License
 # Repository:        https://github.com/kitterman-t/gemini-cli-update
 # Documentation:     https://github.com/kitterman-t/gemini-cli-update/blob/main/README.md
@@ -330,7 +330,7 @@ function Create-Backup {
     $backupContent = @"
 === GEMINI CLI UPDATE BACKUP ===
 Timestamp: $Timestamp
-Script Version: 3.0.0
+Script Version: 3.0.1
 Platform: $(if ($IsWindowsPlatform) { "Windows" } else { "macOS" })
 
 === SOFTWARE VERSIONS ===
@@ -474,11 +474,43 @@ function Update-NodeJS {
 # Function: Update npm to latest version
 function Update-Npm {
     Write-Log "Installing/updating npm to latest version..." "INFO"
-    Invoke-CommandWithLog "npm install -g npm@latest --force" "Installing/updating npm to latest version (force reinstall)"
     
+    # Clean up any stale npm directories from previous failed installations
     if (Test-CommandExists "npm") {
-        $script:UpdatedNpmVersion = npm -v 2>$null
-        Write-Log "npm installed/updated to: $UpdatedNpmVersion" "SUCCESS"
+        $npmPrefix = npm config get prefix 2>$null
+        if ($null -eq $npmPrefix) {
+            $nodeVersion = node -v 2>$null
+            $npmPrefix = "$env:USERPROFILE\.nvm\versions\node\$nodeVersion"
+        }
+        $npmPath = Join-Path $npmPrefix "lib\node_modules"
+        Write-Log "Cleaning up stale npm directories at: $npmPath" "DEBUG"
+        
+        # Remove any .npm-*, .update-*, and .*-* temporary directories
+        if (Test-Path $npmPath) {
+            Get-ChildItem -Path $npmPath -Filter ".npm-*" -Directory -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+            Get-ChildItem -Path $npmPath -Filter ".update-*" -Directory -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+    
+    # Try to update npm with force flag
+    if (Invoke-CommandWithLog "npm install -g npm@latest --force" "Installing/updating npm to latest version (force reinstall)" $true) {
+        if (Test-CommandExists "npm") {
+            $script:UpdatedNpmVersion = npm -v 2>$null
+            Write-Log "npm installed/updated to: $UpdatedNpmVersion" "SUCCESS"
+        }
+    } else {
+        Write-Log "npm update failed with force flag, trying without force..." "WARNING"
+        # Try again without force flag as fallback
+        if (Invoke-CommandWithLog "npm install -g npm@latest" "Installing/updating npm to latest version (without force)" $true) {
+            if (Test-CommandExists "npm") {
+                $script:UpdatedNpmVersion = npm -v 2>$null
+                Write-Log "npm installed/updated to: $UpdatedNpmVersion" "SUCCESS"
+            }
+        } else {
+            $currentVersion = npm -v 2>$null
+            Write-Log "npm update failed completely. Current version: $currentVersion" "WARNING"
+            $script:Warnings++
+        }
     }
     Write-Host ""
 }
@@ -486,11 +518,40 @@ function Update-Npm {
 # Function: Update Gemini CLI to latest version
 function Update-GeminiCLI {
     Write-Log "Installing/updating Gemini CLI to latest version..." "INFO"
-    Invoke-CommandWithLog "npm install -g @google/gemini-cli@latest --force" "Installing/updating Gemini CLI to latest version (force reinstall)"
     
-    if (Test-CommandExists "gemini") {
-        $script:UpdatedGeminiVersion = gemini --version 2>$null
-        Write-Log "Gemini CLI installed/updated to: $UpdatedGeminiVersion" "SUCCESS"
+    # Clean up any stale directories before attempting update
+    if (Test-CommandExists "npm") {
+        $npmPrefix = npm config get prefix 2>$null
+        if ($null -eq $npmPrefix) {
+            $nodeVersion = node -v 2>$null
+            $npmPrefix = "$env:USERPROFILE\.nvm\versions\node\$nodeVersion"
+        }
+        $npmPath = Join-Path $npmPrefix "lib\node_modules"
+        if (Test-Path $npmPath) {
+            Get-ChildItem -Path $npmPath -Filter ".gemini-cli-*" -Directory -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+            Get-ChildItem -Path $npmPath -Filter ".update-*" -Directory -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+    
+    # Try to update Gemini CLI with force flag
+    if (Invoke-CommandWithLog "npm install -g @google/gemini-cli@latest --force" "Installing/updating Gemini CLI to latest version (force reinstall)" $true) {
+        if (Test-CommandExists "gemini") {
+            $script:UpdatedGeminiVersion = gemini --version 2>$null
+            Write-Log "Gemini CLI installed/updated to: $UpdatedGeminiVersion" "SUCCESS"
+        }
+    } else {
+        Write-Log "Gemini CLI update failed with force flag, trying without force..." "WARNING"
+        # Try again without force flag as fallback
+        if (Invoke-CommandWithLog "npm install -g @google/gemini-cli@latest" "Installing/updating Gemini CLI to latest version (without force)" $true) {
+            if (Test-CommandExists "gemini") {
+                $script:UpdatedGeminiVersion = gemini --version 2>$null
+                Write-Log "Gemini CLI installed/updated to: $UpdatedGeminiVersion" "SUCCESS"
+            }
+        } else {
+            $currentVersion = gemini --version 2>$null
+            Write-Log "Gemini CLI update failed completely. Current version: $currentVersion" "WARNING"
+            $script:Warnings++
+        }
     }
     Write-Host ""
 }
@@ -499,18 +560,47 @@ function Update-GeminiCLI {
 function Install-GeminiDependencies {
     Write-Log "Installing/updating Google Generative AI dependencies..." "INFO"
     
+    # Clean up any stale directories before attempting update
+    if (Test-CommandExists "npm") {
+        $npmPrefix = npm config get prefix 2>$null
+        if ($null -eq $npmPrefix) {
+            $nodeVersion = node -v 2>$null
+            $npmPrefix = "$env:USERPROFILE\.nvm\versions\node\$nodeVersion"
+        }
+        $npmPath = Join-Path $npmPrefix "lib\node_modules"
+        if (Test-Path $npmPath) {
+            Get-ChildItem -Path $npmPath -Filter ".update-*" -Directory -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+            Get-ChildItem -Path $npmPath -Filter ".*-*" -Directory -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+    
     # Install globally for CLI access (force reinstall)
-    Invoke-CommandWithLog "npm install -g @google/generative-ai --force" "Installing/updating Google Generative AI package globally (force reinstall)"
+    if (Invoke-CommandWithLog "npm install -g @google/generative-ai --force" "Installing/updating Google Generative AI package globally (force reinstall)" $true) {
+        Write-Log "Google Generative AI package installed globally" "SUCCESS"
+    } else {
+        Write-Log "Google Generative AI install failed with force flag, trying without force..." "WARNING"
+        # Try again without force flag as fallback
+        if (Invoke-CommandWithLog "npm install -g @google/generative-ai" "Installing/updating Google Generative AI package globally (without force)" $true) {
+            Write-Log "Google Generative AI package installed globally" "SUCCESS"
+        } else {
+            Write-Log "Google Generative AI install failed completely" "WARNING"
+            $script:Warnings++
+        }
+    }
     
     # Install locally in current project (if in a project directory)
     if (Test-Path "package.json") {
-        Invoke-CommandWithLog "npm install @google/generative-ai --force" "Installing/updating Google Generative AI package locally (force reinstall)"
-        Write-Log "Local project dependencies updated" "SUCCESS"
+        if (Invoke-CommandWithLog "npm install @google/generative-ai --force" "Installing/updating Google Generative AI package locally (force reinstall)" $true) {
+            Write-Log "Local project dependencies updated" "SUCCESS"
+        } else {
+            Write-Log "Local installation failed, trying without force..." "WARNING"
+            Invoke-CommandWithLog "npm install @google/generative-ai" "Installing/updating Google Generative AI package locally (without force)" $true
+        }
     } else {
         Write-Log "No package.json found - skipping local installation" "INFO"
     }
     
-    Write-Log "Google Generative AI dependencies installed/updated successfully" "SUCCESS"
+    Write-Log "Google Generative AI dependencies installation completed" "SUCCESS"
     Write-Host ""
 }
 
@@ -519,18 +609,15 @@ function Enable-IDEIntegration {
     Write-Log "Configuring Gemini CLI IDE integration..." "INFO"
     
     if (Test-CommandExists "gemini") {
-        # Enable IDE integration
-        Invoke-CommandWithLog "gemini /ide enable" "Enabling Gemini CLI IDE integration" $true
+        # Skip IDE enable command as it hangs due to configuration format changes
+        # Users can manually configure IDE integration if needed
+        Write-Log "Skipping automatic IDE integration (known issue with hanging)" "WARNING"
+        Write-Log "To enable IDE integration manually, run: gemini /ide enable" "INFO"
+        Write-Log "For more information, visit: https://geminicli.com/docs/get-started/configuration/" "INFO"
+        $script:Warnings++
         
-        # Check IDE status
-        Write-Log "Checking IDE integration status..." "DEBUG"
-        if (Invoke-CommandWithLog "gemini /ide status" "Checking IDE integration status" $true) {
-            Write-Log "IDE integration configured successfully" "SUCCESS"
-        } else {
-            Write-Log "IDE integration may need manual configuration" "WARNING"
-            Write-Log "Run 'gemini /ide enable' manually if needed" "INFO"
-            $script:Warnings++
-        }
+        # Note: IDE integration can be manually configured after script completion
+        Write-Log "IDE integration can be configured manually after script completion" "INFO"
     } else {
         Write-Log "Gemini CLI not found - skipping IDE integration" "ERROR"
         $script:Errors++
@@ -629,7 +716,7 @@ function New-Summary {
                     GEMINI CLI UPDATE SUMMARY
 =============================================================================
 Timestamp: $Timestamp
-Script Version: 3.0.0
+Script Version: 3.0.1
 Platform: $(if ($IsWindowsPlatform) { "Windows" } else { "macOS" })
 Log file: $LogFile
 
@@ -712,7 +799,7 @@ function Start-UpdateProcess {
                     CROSS-PLATFORM GEMINI CLI UPDATE SCRIPT
 =============================================================================
 Started: $Timestamp
-Script Version: 3.0.0
+Script Version: 3.0.1
 Platform: $(if ($IsWindowsPlatform) { "Windows" } else { "macOS" })
 Log file: $LogFile
 Verbose mode: $Verbose
@@ -805,7 +892,7 @@ Dry run mode: $DryRun
 # Handle help parameter
 if ($Help) {
     Write-Host @"
-Cross-Platform Gemini CLI Update Script v3.0.0
+Cross-Platform Gemini CLI Update Script v3.0.1
 
 USAGE:
     .\update_gemini_cli.ps1 [OPTIONS]

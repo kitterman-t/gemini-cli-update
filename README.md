@@ -6,7 +6,7 @@
 [![Linux](https://img.shields.io/badge/Platform-Linux-green.svg)](https://www.linux.org/)
 [![PowerShell](https://img.shields.io/badge/Shell-PowerShell-purple.svg)](https://docs.microsoft.com/powershell/)
 [![Bash](https://img.shields.io/badge/Shell-Bash-green.svg)](https://www.gnu.org/software/bash/)
-[![Version](https://img.shields.io/badge/Version-3.0.0-brightgreen.svg)](https://github.com/kitterman-t/gemini-cli-update/releases)
+[![Version](https://img.shields.io/badge/Version-3.0.1-brightgreen.svg)](https://github.com/kitterman-t/gemini-cli-update/releases)
 [![Production Ready](https://img.shields.io/badge/Status-Production%20Ready-success.svg)](https://github.com/kitterman-t/gemini-cli-update)
 
 > **Enterprise-grade cross-platform automation script for updating Node.js, npm, Gemini CLI, and Google Cloud SDK on Windows, macOS, and Linux systems.**
@@ -22,7 +22,7 @@ The **Cross-Platform Gemini CLI Update Script** is a comprehensive, production-r
 - **📊 Comprehensive Logging**: Detailed logs with timestamps, error tracking, and performance metrics
 - **💾 Backup System**: Automatic backups before updates for rollback capability
 - **🛡️ Error Handling**: Graceful failure handling with detailed error reporting
-- **🔧 IDE Integration**: Automatic Gemini CLI IDE integration for optimal Cursor support
+- **🔧 IDE Integration**: Manual IDE integration support (automatic skipped due to known issue)
 - **👀 Dry Run Mode**: Preview changes without executing them
 - **📝 Verbose Output**: Detailed execution information for debugging
 - **📈 Version Tracking**: Before/after version comparison and change tracking
@@ -35,7 +35,8 @@ The **Cross-Platform Gemini CLI Update Script** is a comprehensive, production-r
 gemini-cli-update/
 ├── update_gemini_cli.sh              # Cross-platform launcher (auto-detects OS)
 ├── update_gemini_cli.ps1             # Windows PowerShell script
-├── update_gemini_cli_original.sh     # macOS/Linux Bash script
+├── update_gemini_cli_macos.sh        # macOS/Linux Bash script (primary)
+├── update_gemini_cli_original.sh     # Alternative launcher (alias)
 ├── README.md                         # This comprehensive documentation
 ├── README-CROSS-PLATFORM.md          # Detailed cross-platform guide
 ├── CHANGELOG.md                      # Version history and changes
@@ -84,7 +85,7 @@ git clone https://github.com/kitterman-t/gemini-cli-update.git
 cd gemini-cli-update
 
 # Make scripts executable (Unix systems)
-chmod +x update_gemini_cli.sh update_gemini_cli_original.sh
+chmod +x update_gemini_cli.sh update_gemini_cli_macos.sh update_gemini_cli_original.sh
 ```
 
 ### Option 2: Direct Download
@@ -95,10 +96,11 @@ curl -O https://raw.githubusercontent.com/kitterman-t/gemini-cli-update/main/upd
 
 # Download platform-specific scripts
 curl -O https://raw.githubusercontent.com/kitterman-t/gemini-cli-update/main/update_gemini_cli.ps1
+curl -O https://raw.githubusercontent.com/kitterman-t/gemini-cli-update/main/update_gemini_cli_macos.sh
 curl -O https://raw.githubusercontent.com/kitterman-t/gemini-cli-update/main/update_gemini_cli_original.sh
 
 # Make executable (Unix systems)
-chmod +x update_gemini_cli.sh update_gemini_cli_original.sh
+chmod +x update_gemini_cli.sh update_gemini_cli_macos.sh update_gemini_cli_original.sh
 ```
 
 ## 🎯 Usage
@@ -140,20 +142,29 @@ The main script automatically detects your operating system and runs the appropr
 
 #### macOS/Linux (Bash)
 ```bash
-# Basic usage
-./update_gemini_cli_original.sh
+# Basic usage (recommended - uses launcher)
+./update_gemini_cli.sh
+
+# Direct execution of macOS/Linux script
+./update_gemini_cli_macos.sh
 
 # With verbose output
-./update_gemini_cli_original.sh --verbose
+./update_gemini_cli.sh --verbose
+# or
+./update_gemini_cli_macos.sh --verbose
 
 # Dry run (preview changes)
-./update_gemini_cli_original.sh --dry-run
+./update_gemini_cli.sh --dry-run
+# or
+./update_gemini_cli_macos.sh --dry-run
 
 # Combine options
-./update_gemini_cli_original.sh --verbose --dry-run
+./update_gemini_cli.sh --verbose --dry-run
 
 # Show help
-./update_gemini_cli_original.sh --help
+./update_gemini_cli.sh --help
+# or
+./update_gemini_cli_macos.sh --help
 ```
 
 ### Command Line Options
@@ -242,7 +253,7 @@ The script automatically detects and uses:
 #### Permission Errors
 ```bash
 # Unix systems
-chmod +x update_gemini_cli.sh update_gemini_cli_original.sh
+chmod +x update_gemini_cli.sh update_gemini_cli_macos.sh update_gemini_cli_original.sh
 
 # Windows PowerShell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
@@ -290,6 +301,22 @@ npm config set registry https://registry.npmjs.org/
 ```
 
 #### Gemini CLI Issues
+
+**IDE Integration Hanging Issue:**
+The script skips automatic IDE integration configuration as the `gemini /ide enable` command may hang due to recent configuration format changes. To manually enable IDE integration:
+
+```bash
+# Manually enable IDE integration
+gemini /ide enable
+
+# Check IDE status
+gemini /ide status
+
+# For configuration details, visit:
+# https://geminicli.com/docs/get-started/configuration/
+```
+
+**Other Gemini CLI Issues:**
 ```bash
 # Check API key configuration
 gemini config
@@ -297,8 +324,11 @@ gemini config
 # Verify internet connectivity
 ping google.com
 
-# Check for firewall/proxy issues
-curl -I https://api.gemini.com
+# Check for graceful errors
+gemini ask "test"
+
+# View error reports
+ls /var/folders/*/gemini-client-error-*.json
 ```
 
 #### Google Cloud SDK Issues
@@ -344,6 +374,17 @@ gcloud components list
 - **Network Security**: HTTPS for all downloads
 
 ## 📝 Version History
+
+### v3.0.1 (2025-12-06) - Production Optimization & Documentation Enhancement
+- ✅ **Enhanced documentation** with comprehensive function comments and usage guides
+- ✅ **Improved script headers** with detailed purpose, capabilities, and usage information
+- ✅ **Updated all documentation files** with current information and best practices
+- ✅ **Version consistency** across all scripts and documentation
+- ✅ **Production tested** and verified across multiple execution runs
+- ✅ **Enhanced error handling** with proper unbound variable handling
+- ✅ **Improved path resolution** in launcher scripts for better portability
+- ✅ **Fixed launcher script recursion bug** in update_gemini_cli_original.sh
+
 
 ### v3.0.0 (2025-10-21) - Cross-Platform Release
 - ✅ **Cross-platform support** for Windows, macOS, and Linux
@@ -432,6 +473,34 @@ If you encounter any issues or have questions:
 - **[Usage Examples](examples/usage-examples.md)**: Practical usage scenarios
 - **[Contributing Guidelines](CONTRIBUTING.md)**: How to contribute to the project
 - **[Changelog](CHANGELOG.md)**: Complete version history
+
+---
+
+## 📚 Quick Reference
+
+### Essential Commands
+```bash
+# Run update (recommended)
+./update_gemini_cli.sh
+
+# Preview changes first
+./update_gemini_cli.sh --dry-run --verbose
+
+# Check current versions
+node --version && npm --version && gemini --version
+```
+
+### File Structure
+- `update_gemini_cli.sh` - **Primary launcher** (use this)
+- `update_gemini_cli_macos.sh` - macOS/Linux implementation
+- `update_gemini_cli.ps1` - Windows PowerShell implementation
+- `update_gemini_cli_original.sh` - Alternative launcher (same as primary)
+
+### Log Files Location
+All logs are stored in: `./gemini-update-logs/`
+- `update_*.log` - Detailed execution logs
+- `summary_*.txt` - Human-readable summaries
+- `backups/*.txt` - Configuration backups
 
 ---
 

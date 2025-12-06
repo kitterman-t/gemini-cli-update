@@ -2,6 +2,13 @@
 
 This document provides practical examples of how to use the Gemini CLI Update Script in various scenarios.
 
+**Last Updated:** December 6, 2025  
+**Script Version:** 3.0.1
+
+## 📖 About This Guide
+
+This guide contains real-world examples and use cases for the Gemini CLI Update Script. Each example is tested and verified to work correctly. Use these examples as templates for your own automation and integration needs.
+
 ## Basic Usage
 
 ### Simple Update

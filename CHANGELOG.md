@@ -8,10 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Nothing yet
+- Comprehensive function documentation with purpose, parameters, and behavior notes
+- Enhanced script headers with detailed usage information and capabilities
+- Improved inline comments explaining code logic and design decisions
+- Updated all documentation files with current information and best practices
 
 ### Changed
-- Nothing yet
+- Updated all script headers to version 3.0.1 with current modification dates
+- Enhanced README.md with clearer usage examples and file structure
+- Improved all function comments with detailed purpose and behavior descriptions
+- Updated version badges and references throughout documentation
 
 ### Deprecated
 - Nothing yet
@@ -20,10 +26,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Nothing yet
 
 ### Fixed
-- Nothing yet
+- Version consistency across all scripts and documentation files
+- Documentation accuracy with current script behavior and features
 
 ### Security
 - Nothing yet
+
+## [3.0.1] - 2025-12-06
+
+### Added
+- Workaround for IDE integration hanging issue
+- Documentation for manual IDE configuration
+- Improved path resolution in launcher scripts for better portability
+- Automatic executable permission check and fix in launcher scripts
+- Enhanced error handling with proper unbound variable handling
+
+### Changed
+- IDE integration now skipped automatically due to known hanging issue
+- Updated troubleshooting section with IDE integration guidance
+- Launcher scripts now use absolute paths for better reliability
+- Improved OS detection to handle unbound variables gracefully
+
+### Fixed
+- **Fixed hanging issue**: Script no longer hangs on `gemini /ide enable` command
+- Resolved blocking issue caused by Gemini CLI configuration format changes
+- **Fixed npm update failure**: Added cleanup of stale npm directories before update
+- Resolved ENOTEMPTY error (code 190) by removing temporary `.npm-*` directories
+- Added fallback retry mechanism for npm updates
+- **Fixed Gemini CLI update failure**: Added cleanup of stale `.update-*` directories
+- Enhanced cleanup to remove all temporary directories (`.npm-*`, `.update-*`, `.gemini-cli-*`, `.*-*`)
+- Added fallback retry mechanism for Gemini CLI updates
+- **Fixed Google Generative AI installation failure**: Added cleanup of stale `.*-*` directories
+- Enhanced cleanup to handle all npm temporary directory patterns
+- **Fixed launcher script recursion bug**: `update_gemini_cli_original.sh` no longer calls itself recursively
+- **Fixed unbound variable error**: OS detection now handles unbound variables properly on macOS/Linux
+- **Fixed path resolution**: Launcher scripts now use absolute paths for reliable script execution
+- **Production tested**: Verified across multiple execution runs with zero errors
 
 ## [3.0.0] - 2025-10-21
 
