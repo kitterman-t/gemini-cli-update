@@ -496,37 +496,72 @@ update_npm() {
 #   - Verifies installation by checking gemini command availability
 # Notes: Gemini CLI is the primary tool this script maintains
 update_gemini_cli() {
-    log "Installing/updating Gemini CLI to latest version..." "INFO"
+    log "Discovering all Gemini CLI instances to ensure system-wide update..." "INFO"
     
-    # Clean up any stale directories before attempting update
-    if command_exists npm; then
-        local npm_prefix=$(npm config get prefix 2>/dev/null || echo "$HOME/.nvm/versions/node/$(node -v)")
-        local npm_path="$npm_prefix/lib/node_modules"
+    # Use which -a to find all instances in the current PATH
+    local gemini_paths=$(which -a gemini 2>/dev/null)
+    local unique_prefixes=()
+    
+    if [[ -n "$gemini_paths" ]]; then
+        while read -r path; do
+            # Path usually looks like .../bin/gemini
+            # Prefix is the root directory where node_modules/bin resides
+            local bin_dir=$(dirname "$path")
+            local prefix=$(dirname "$bin_dir")
+            
+            # Normalize prefix path
+            prefix=$(cd "$prefix" 2>/dev/null && pwd)
+            
+            if [[ -n "$prefix" ]]; then
+                # Avoid duplicates in unique_prefixes
+                local duplicate=false
+                for p in ${unique_prefixes[@]+"${unique_prefixes[@]}"}; do
+                    if [[ "$p" == "$prefix" ]]; then
+                        duplicate=true
+                        break
+                    fi
+                done
+                if [[ "$duplicate" == false ]]; then
+                    unique_prefixes+=("$prefix")
+                fi
+            fi
+        done <<< "$gemini_paths"
+    fi
+
+    # If no instances found via PATH, use the current npm prefix as fallback
+    if [[ ${#unique_prefixes[@]} -eq 0 ]]; then
+        local current_prefix=$(npm config get prefix 2>/dev/null || echo "$HOME/.nvm/versions/node/$(node -v)")
+        unique_prefixes+=("$current_prefix")
+        log "No existing Gemini CLI instances found in PATH. Using current npm prefix: $current_prefix" "DEBUG"
+    fi
+
+    log "Updating Gemini CLI across ${#unique_prefixes[@]} detected prefix(es)..." "INFO"
+
+    for prefix in ${unique_prefixes[@]+"${unique_prefixes[@]}"}; do
+        log "Updating Gemini CLI at: $prefix" "INFO"
+        
+        # Clean up stale directories at this prefix
+        local npm_path="$prefix/lib/node_modules"
         if [[ -d "$npm_path" ]]; then
             find "$npm_path" -name ".gemini-cli-*" -type d -exec rm -rf {} + 2>/dev/null || true
             find "$npm_path" -name ".update-*" -type d -exec rm -rf {} + 2>/dev/null || true
         fi
-    fi
-    
-    # Try to update Gemini CLI with force flag
-    if execute_with_log "npm install -g @google/gemini-cli@latest --force" "Installing/updating Gemini CLI to latest version (force reinstall)" "true"; then
-        if command_exists gemini; then
-            UPDATED_GEMINI_VERSION=$(gemini --version 2>/dev/null || echo "Unknown")
-            log "Gemini CLI installed/updated to: $UPDATED_GEMINI_VERSION" "SUCCESS"
-        fi
-    else
-        log "Gemini CLI update failed with force flag, trying without force..." "WARNING"
-        # Try again without force flag as fallback
-        if execute_with_log "npm install -g @google/gemini-cli@latest" "Installing/updating Gemini CLI to latest version (without force)" "true"; then
-            if command_exists gemini; then
-                UPDATED_GEMINI_VERSION=$(gemini --version 2>/dev/null || echo "Unknown")
-                log "Gemini CLI installed/updated to: $UPDATED_GEMINI_VERSION" "SUCCESS"
-            fi
+
+        # Try to update Gemini CLI with force flag at this prefix
+        if execute_with_log "npm install -g --prefix \"$prefix\" @google/gemini-cli@latest --force" "Updating Gemini CLI at $prefix (force reinstall)" "true"; then
+            local version=$("$prefix/bin/gemini" --version 2>/dev/null || echo "Unknown")
+            log "Gemini CLI updated at $prefix to: $version" "SUCCESS"
         else
-            log "Gemini CLI update failed completely. Current version: $(gemini --version 2>/dev/null || echo 'Unknown')" "WARNING"
-            ((WARNINGS++))
+            log "Failed to update Gemini CLI at $prefix with force flag, trying without force..." "WARNING"
+            if execute_with_log "npm install -g --prefix \"$prefix\" @google/gemini-cli@latest" "Updating Gemini CLI at $prefix (without force)" "true"; then
+                local version=$("$prefix/bin/gemini" --version 2>/dev/null || echo "Unknown")
+                log "Gemini CLI updated at $prefix to: $version" "SUCCESS"
+            else
+                log "Gemini CLI update failed completely for prefix: $prefix" "WARNING"
+                ((WARNINGS++))
+            fi
         fi
-    fi
+    done
     echo ""
 }
 

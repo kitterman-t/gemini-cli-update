@@ -537,44 +537,73 @@ function Update-Npm {
 
 # Function: Update Gemini CLI to latest version
 function Update-GeminiCLI {
-    Write-Log "Installing/updating Gemini CLI to latest version..." "INFO"
+    Write-Log "Discovering all Gemini CLI instances to ensure system-wide update..." "INFO"
     
-    # Clean up any stale directories before attempting update
-    if (Test-CommandExists "npm") {
-        $npmPrefix = npm config get prefix 2>$null
-        if ($null -eq $npmPrefix) {
-            $nodeVersion = node -v 2>$null
-            $npmPrefix = "$env:USERPROFILE\.nvm\versions\node\$nodeVersion"
+    # Use Get-Command -All to find all instances
+    $geminiCommands = Get-Command gemini -All -ErrorAction SilentlyContinue
+    $uniquePrefixes = New-Object System.Collections.Generic.HashSet[string]
+    
+    if ($geminiCommands) {
+        foreach ($cmd in $geminiCommands) {
+            # Source usually looks like ...\bin\gemini or ...\gemini.cmd
+            $path = $cmd.Source
+            if ($path) {
+                # Prefix is usually the directory containing bin, or the directory containing the .cmd
+                $binDir = Split-Path $path -Parent
+                $prefix = Split-Path $binDir -Parent
+                
+                # Normalize and add to unique prefixes (case-insensitive for Windows)
+                if ($prefix) {
+                    $uniquePrefixes.Add($prefix.ToLower()) | Out-Null
+                }
+            }
         }
-        $npmPath = Join-Path $npmPrefix "lib\node_modules"
+    }
+
+    # Fallback to current npm prefix if none found via PATH
+    if ($uniquePrefixes.Count -eq 0) {
+        $npmPrefix = npm config get prefix 2>$null
+        if (-not $npmPrefix) {
+            $npmPrefix = Join-Path $env:APPDATA "npm"
+        }
+        $uniquePrefixes.Add($npmPrefix.ToLower()) | Out-Null
+        Write-Log "No existing Gemini CLI instances found in PATH. Using default prefix: $npmPrefix" "DEBUG"
+    }
+
+    Write-Log "Updating Gemini CLI across $($uniquePrefixes.Count) detected location(s)..." "INFO"
+
+    foreach ($prefix in $uniquePrefixes) {
+        Write-Log "Updating Gemini CLI at: $prefix" "INFO"
+        
+        # Clean up stale directories
+        # On Windows, node_modules is usually directly in the prefix or prefix\node_modules
+        $npmPath = Join-Path $prefix "node_modules"
         if (Test-Path $npmPath) {
             Get-ChildItem -Path $npmPath -Filter ".gemini-cli-*" -Directory -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
             Get-ChildItem -Path $npmPath -Filter ".update-*" -Directory -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
         }
-    }
-    
-    # Try to update Gemini CLI with force flag
-    if (Invoke-CommandWithLog "npm install -g @google/gemini-cli@latest --force" "Installing/updating Gemini CLI to latest version (force reinstall)" $true) {
-        if (Test-CommandExists "gemini") {
-            $script:UpdatedGeminiVersion = gemini --version 2>$null
-            Write-Log "Gemini CLI installed/updated to: $UpdatedGeminiVersion" "SUCCESS"
-        }
-    }
-    else {
-        Write-Log "Gemini CLI update failed with force flag, trying without force..." "WARNING"
-        # Try again without force flag as fallback
-        if (Invoke-CommandWithLog "npm install -g @google/gemini-cli@latest" "Installing/updating Gemini CLI to latest version (without force)" $true) {
-            if (Test-CommandExists "gemini") {
-                $script:UpdatedGeminiVersion = gemini --version 2>$null
-                Write-Log "Gemini CLI installed/updated to: $UpdatedGeminiVersion" "SUCCESS"
-            }
+
+        # Try to update Gemini CLI with force flag at this prefix
+        if (Invoke-CommandWithLog "npm install -g --prefix `"$prefix`" @google/gemini-cli@latest --force" "Updating Gemini CLI at $prefix (force reinstall)" $true) {
+            Write-Log "Gemini CLI updated at $prefix successfully" "SUCCESS"
         }
         else {
-            $currentVersion = gemini --version 2>$null
-            Write-Log "Gemini CLI update failed completely. Current version: $currentVersion" "WARNING"
-            $script:Warnings++
+            Write-Log "Failed to update Gemini CLI at $prefix with force flag, trying without force..." "WARNING"
+            if (Invoke-CommandWithLog "npm install -g --prefix `"$prefix`" @google/gemini-cli@latest" "Updating Gemini CLI at $prefix (without force)" $true) {
+                Write-Log "Gemini CLI updated at $prefix successfully" "SUCCESS"
+            }
+            else {
+                Write-Log "Gemini CLI update failed completely for prefix: $prefix" "WARNING"
+                $script:Warnings++
+            }
         }
     }
+    
+    # Refresh version info from the primary one (the one first in PATH)
+    if (Test-CommandExists "gemini") {
+        $script:UpdatedGeminiVersion = gemini --version 2>$null
+    }
+    
     Write-Host ""
 }
 
