@@ -7,10 +7,10 @@ The update script was failing when attempting to update npm with error code 190 
 ```
 npm error code ENOTEMPTY
 npm error syscall rename
-npm error path /Users/tim/.nvm/versions/node/v24.3.0/lib/node_modules/npm
-npm error dest /Users/tim/.nvm/versions/node/v24.3.0/lib/node_modules/.npm-PrvWf21D
+npm error path ~/.nvm/versions/node/v24.3.0/lib/node_modules/npm
+npm error dest ~/.nvm/versions/node/v24.3.0/lib/node_modules/.npm-PrvWf21D
 npm error errno -66
-npm error ENOTEMPTY: directory not empty, rename '/Users/tim/.nvm/versions/node/v24.3.0/lib/node_modules/npm' -> '/Users/tim/.nvm/versions/node/v24.3.0/lib/node_modules/.npm-PrvWf21D'
+npm error ENOTEMPTY: directory not empty, rename '~/.nvm/versions/node/v24.3.0/lib/node_modules/npm' -> '~/.nvm/versions/node/v24.3.0/lib/node_modules/.npm-PrvWf21D'
 ```
 
 ## Root Cause
@@ -144,7 +144,7 @@ The fix has been tested and verified to work correctly:
 
 # Expected output
 [INFO] Installing/updating npm to latest version...
-[DEBUG] Cleaning up stale npm directories at: /Users/tim/.nvm/versions/node/v24.3.0/lib/node_modules
+[DEBUG] Cleaning up stale npm directories at: ~/.nvm/versions/node/v24.3.0/lib/node_modules
 [SUCCESS] npm installed/updated to: 11.6.2
 ```
 

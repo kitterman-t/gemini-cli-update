@@ -479,6 +479,7 @@ If you encounter any issues or have questions:
 - **[Usage Examples](examples/usage-examples.md)**: Practical usage scenarios
 - **[Contributing Guidelines](CONTRIBUTING.md)**: How to contribute to the project
 - **[Changelog](CHANGELOG.md)**: Complete version history
+- **[Production Readiness Report](PRODUCTION_READINESS_REPORT.md)**: Comprehensive security and readiness audit
 
 ---
 

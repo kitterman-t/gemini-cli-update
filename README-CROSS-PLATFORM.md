@@ -9,7 +9,7 @@
 
 A comprehensive cross-platform automation script for updating Node.js, npm, Gemini CLI, and Google Cloud SDK on Windows, macOS, and Linux systems. Features extensive logging, error handling, backup creation, and detailed reporting capabilities.
 
-**Version:** 3.0.1 | **Last Updated:** December 6, 2025 | **Status:** Production Ready
+**Version:** 3.1.0 | **Last Updated:** December 17, 2025 | **Status:** Production Ready
 
 ## 🚀 Features
 
