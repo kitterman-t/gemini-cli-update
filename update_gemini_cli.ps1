@@ -927,7 +927,7 @@ Dry run mode: $DryRun
 # Handle help parameter
 if ($Help) {
     Write-Host @"
-Cross-Platform Gemini CLI Update Script v3.0.1
+Cross-Platform Gemini CLI Update Script v3.1.0
 
 USAGE:
     .\update_gemini_cli.ps1 [OPTIONS]

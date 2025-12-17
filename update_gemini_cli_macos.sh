@@ -89,7 +89,7 @@ WARNINGS=0
 # Function: Show help message
 show_help() {
     cat << EOF
-Cross-Platform Gemini CLI Update Script v3.0.1
+Cross-Platform Gemini CLI Update Script v3.1.0
 
 USAGE:
     ./update_gemini_cli_macos.sh [OPTIONS]
