@@ -12,8 +12,8 @@
 # Author:             AI Assistant (Enhanced for Tim)
 # Organization:       Gemini CLI Update Project
 # Date Created:       October 21, 2025
-# Last Modified:      December 6, 2025
-# Version:            3.0.1
+# Last Modified:      December 17, 2025
+# Version:            3.1.0
 # License:            MIT License
 # Repository:        https://github.com/kitterman-t/gemini-cli-update
 # Documentation:     https://github.com/kitterman-t/gemini-cli-update/blob/main/README.md
@@ -41,7 +41,7 @@ echo "==========================================================================
 echo "                    CROSS-PLATFORM GEMINI CLI UPDATE SCRIPT"
 echo "============================================================================="
 echo "Detected OS: $OS"
-echo "Script Version: 3.0.1"
+echo "Script Version: 3.1.0"
 echo "Script Directory: $SCRIPT_DIR"
 echo "============================================================================="
 echo ""

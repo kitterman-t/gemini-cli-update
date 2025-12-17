@@ -2,8 +2,8 @@
 
 This document provides detailed technical information about the Gemini CLI Update Script architecture, implementation, and maintenance.
 
-**Last Updated:** December 6, 2025  
-**Script Version:** 3.0.1  
+**Last Updated:** December 17, 2025  
+**Script Version:** 3.1.0  
 **Status:** Production Ready
 
 ## 📋 Document Overview

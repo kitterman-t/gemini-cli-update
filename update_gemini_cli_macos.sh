@@ -13,8 +13,8 @@
 # Author:             AI Assistant (Enhanced for Tim)
 # Organization:       Gemini CLI Update Project
 # Date Created:       October 21, 2025
-# Last Modified:      December 6, 2025
-# Version:            3.0.1
+# Last Modified:      December 17, 2025
+# Version:            3.1.0
 # License:            MIT License
 # Repository:        https://github.com/kitterman-t/gemini-cli-update
 # Documentation:     https://github.com/kitterman-t/gemini-cli-update/blob/main/README.md
@@ -335,7 +335,7 @@ create_backup() {
     cat > "$backup_file" << EOF
 === GEMINI CLI UPDATE BACKUP ===
 Timestamp: $TIMESTAMP
-Script Version: 3.0.1
+Script Version: 3.1.0
 Platform: $(uname -s)
 
 === SOFTWARE VERSIONS ===
@@ -595,10 +595,11 @@ enable_ide_integration() {
     log "Configuring Gemini CLI IDE integration..." "INFO"
     
     if command_exists gemini; then
-        # Skip IDE enable command as it hangs due to configuration format changes
-        # Users can manually configure IDE integration if needed
-        log "Skipping automatic IDE integration (known issue with hanging)" "WARNING"
-        log "To enable IDE integration manually, run: gemini /ide enable" "INFO"
+        # Skip IDE enable command as it requires a running IDE companion extension
+        # and may hang or fail with connection error if the extension is not active.
+        log "Skipping automatic IDE integration (requires active IDE extension)" "WARNING"
+        log "Note: 'gemini /ide enable' may fail with 'Failed to connect to IDE companion extension'" "INFO"
+        log "To manually enable, ensure your IDE extension is running then run: gemini /ide enable" "INFO"
         log "For more information, visit: https://geminicli.com/docs/get-started/configuration/" "INFO"
         ((WARNINGS++))
         
@@ -711,7 +712,7 @@ generate_summary() {
                     GEMINI CLI UPDATE SUMMARY
 =============================================================================
 Timestamp: $TIMESTAMP
-Script Version: 3.0.1
+Script Version: 3.1.0
 Platform: $(uname -s)
 Log file: $LOG_FILE
 
@@ -800,7 +801,7 @@ main() {
                     CROSS-PLATFORM GEMINI CLI UPDATE SCRIPT
 =============================================================================
 Started: $TIMESTAMP
-Script Version: 3.0.1
+Script Version: 3.1.0
 Platform: $(uname -s)
 Log file: $LOG_FILE
 Verbose mode: $VERBOSE

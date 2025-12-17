@@ -5,32 +5,20 @@ All notable changes to the Gemini CLI Update Script will be documented in this f
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [3.1.0] - 2025-12-17
 
 ### Added
-- Comprehensive function documentation with purpose, parameters, and behavior notes
-- Enhanced script headers with detailed usage information and capabilities
-- Improved inline comments explaining code logic and design decisions
-- Updated all documentation files with current information and best practices
+- Successfully updated Gemini CLI to v0.21.1 and npm to v11.7.0
+- Documented IDE integration "Failed to connect" error as a known limitation of the current CLI/environment
+- Added verification of latest tool stability after multiple full update runs
 
 ### Changed
-- Updated all script headers to version 3.0.1 with current modification dates
-- Enhanced README.md with clearer usage examples and file structure
-- Improved all function comments with detailed purpose and behavior descriptions
-- Updated version badges and references throughout documentation
-
-### Deprecated
-- Nothing yet
-
-### Removed
-- Nothing yet
+- Updated all scripts and documentation to version 3.1.0
+- Refined IDE integration skip message to include connection error details
+- Updated technical documentation with current production tool versions
 
 ### Fixed
-- Version consistency across all scripts and documentation files
-- Documentation accuracy with current script behavior and features
-
-### Security
-- Nothing yet
+- Improved resilience of update process through repeated verification steps
 
 ## [3.0.1] - 2025-12-06
 

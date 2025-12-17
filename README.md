@@ -6,7 +6,7 @@
 [![Linux](https://img.shields.io/badge/Platform-Linux-green.svg)](https://www.linux.org/)
 [![PowerShell](https://img.shields.io/badge/Shell-PowerShell-purple.svg)](https://docs.microsoft.com/powershell/)
 [![Bash](https://img.shields.io/badge/Shell-Bash-green.svg)](https://www.gnu.org/software/bash/)
-[![Version](https://img.shields.io/badge/Version-3.0.1-brightgreen.svg)](https://github.com/kitterman-t/gemini-cli-update/releases)
+[![Version](https://img.shields.io/badge/Version-3.1.0-brightgreen.svg)](https://github.com/kitterman-t/gemini-cli-update/releases)
 [![Production Ready](https://img.shields.io/badge/Status-Production%20Ready-success.svg)](https://github.com/kitterman-t/gemini-cli-update)
 
 > **Enterprise-grade cross-platform automation script for updating Node.js, npm, Gemini CLI, and Google Cloud SDK on Windows, macOS, and Linux systems.**
@@ -374,6 +374,12 @@ gcloud components list
 - **Network Security**: HTTPS for all downloads
 
 ## 📝 Version History
+
+### v3.1.0 (2025-12-17) - Production Update
+- ✅ **Successfully updated** Gemini CLI to v0.21.1 and npm to v11.7.0
+- ✅ **Refined IDE integration skip message** with connection error details
+- ✅ **Updated documentation** with current production tool versions
+- ✅ **Stability verified** after multiple full production update runs
 
 ### v3.0.1 (2025-12-06) - Production Optimization & Documentation Enhancement
 - ✅ **Enhanced documentation** with comprehensive function comments and usage guides

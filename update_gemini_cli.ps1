@@ -13,8 +13,8 @@
 # Author:             AI Assistant (Enhanced for Tim)
 # Organization:       Gemini CLI Update Project
 # Date Created:       October 21, 2025
-# Last Modified:      December 6, 2025
-# Version:            3.0.1
+# Last Modified:      December 17, 2025
+# Version:            3.1.0
 # License:            MIT License
 # Repository:        https://github.com/kitterman-t/gemini-cli-update
 # Documentation:     https://github.com/kitterman-t/gemini-cli-update/blob/main/README.md
@@ -210,7 +210,8 @@ function Invoke-CommandWithLog {
         if ($AllowFailure) {
             Write-Log "Continuing despite command failure (AllowFailure=true)" "WARNING"
             return $false
-        } else {
+        }
+        else {
             throw $_
         }
     }
@@ -254,12 +255,14 @@ function Get-Versions {
         try {
             $script:OriginalNodeVersion = node -v 2>$null
             Write-Log "  Node.js: $OriginalNodeVersion" "INFO"
-        } catch {
+        }
+        catch {
             $script:OriginalNodeVersion = "Unknown"
             Write-Log "  Node.js: Unknown" "WARNING"
             $script:Warnings++
         }
-    } else {
+    }
+    else {
         $script:OriginalNodeVersion = "Not installed"
         Write-Log "  Node.js: Not installed" "WARNING"
         $script:Warnings++
@@ -270,12 +273,14 @@ function Get-Versions {
         try {
             $script:OriginalNpmVersion = npm -v 2>$null
             Write-Log "  npm: $OriginalNpmVersion" "INFO"
-        } catch {
+        }
+        catch {
             $script:OriginalNpmVersion = "Unknown"
             Write-Log "  npm: Unknown" "WARNING"
             $script:Warnings++
         }
-    } else {
+    }
+    else {
         $script:OriginalNpmVersion = "Not installed"
         Write-Log "  npm: Not installed" "WARNING"
         $script:Warnings++
@@ -286,12 +291,14 @@ function Get-Versions {
         try {
             $script:OriginalGeminiVersion = gemini --version 2>$null
             Write-Log "  Gemini CLI: $OriginalGeminiVersion" "INFO"
-        } catch {
+        }
+        catch {
             $script:OriginalGeminiVersion = "Unknown"
             Write-Log "  Gemini CLI: Unknown" "WARNING"
             $script:Warnings++
         }
-    } else {
+    }
+    else {
         $script:OriginalGeminiVersion = "Not installed"
         Write-Log "  Gemini CLI: Not installed" "WARNING"
         $script:Warnings++
@@ -302,12 +309,14 @@ function Get-Versions {
         try {
             $script:OriginalGcloudVersion = gcloud version --format="value(Google Cloud SDK)" 2>$null
             Write-Log "  Google Cloud SDK: $OriginalGcloudVersion" "INFO"
-        } catch {
+        }
+        catch {
             $script:OriginalGcloudVersion = "Unknown"
             Write-Log "  Google Cloud SDK: Unknown" "WARNING"
             $script:Warnings++
         }
-    } else {
+    }
+    else {
         $script:OriginalGcloudVersion = "Not installed"
         Write-Log "  Google Cloud SDK: Not installed" "WARNING"
         $script:Warnings++
@@ -330,7 +339,7 @@ function Create-Backup {
     $backupContent = @"
 === GEMINI CLI UPDATE BACKUP ===
 Timestamp: $Timestamp
-Script Version: 3.0.1
+Script Version: 3.1.0
 Platform: $(if ($IsWindowsPlatform) { "Windows" } else { "macOS" })
 
 === SOFTWARE VERSIONS ===
@@ -373,7 +382,8 @@ function Update-WindowsPackageManagers {
     if (Test-CommandExists "choco") {
         Write-Log "Updating Chocolatey..." "INFO"
         Invoke-CommandWithLog "choco upgrade chocolatey -y" "Updating Chocolatey package manager"
-    } else {
+    }
+    else {
         Write-Log "Chocolatey not found. Installing Chocolatey..." "INFO"
         Invoke-CommandWithLog "Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))" "Installing Chocolatey package manager"
     }
@@ -382,7 +392,8 @@ function Update-WindowsPackageManagers {
     if (Test-CommandExists "scoop") {
         Write-Log "Updating Scoop..." "INFO"
         Invoke-CommandWithLog "scoop update" "Updating Scoop package manager"
-    } else {
+    }
+    else {
         Write-Log "Scoop not found. Installing Scoop..." "INFO"
         Invoke-CommandWithLog "Set-ExecutionPolicy RemoteSigned -Scope CurrentUser; irm get.scoop.sh | iex" "Installing Scoop package manager"
     }
@@ -400,7 +411,8 @@ function Update-MacOSPackageManagers {
         Write-Log "Updating Homebrew..." "INFO"
         Invoke-CommandWithLog "brew update" "Updating Homebrew package database"
         Invoke-CommandWithLog "brew upgrade" "Upgrading all Homebrew packages"
-    } else {
+    }
+    else {
         Write-Log "Homebrew not found. Installing Homebrew..." "INFO"
         Invoke-CommandWithLog '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"' "Installing Homebrew package manager"
     }
@@ -422,11 +434,13 @@ function Update-GcloudComponents {
             Write-Log "Google Cloud SDK version: $UpdatedGcloudVersion" "INFO"
         }
         Write-Host ""
-    } else {
+    }
+    else {
         Write-Log "Google Cloud SDK not found. Installing Google Cloud SDK..." "INFO"
         if ($IsWindowsPlatform) {
             Invoke-CommandWithLog "choco install gcloudsdk -y" "Installing Google Cloud SDK via Chocolatey"
-        } else {
+        }
+        else {
             Invoke-CommandWithLog 'curl https://sdk.cloud.google.com | bash' "Installing Google Cloud SDK"
             Invoke-CommandWithLog 'source ~/.bashrc && gcloud components update --quiet' "Updating Google Cloud SDK components after installation"
         }
@@ -443,9 +457,11 @@ function Update-NodeJS {
         # Windows: Use Chocolatey or Scoop
         if (Test-CommandExists "choco") {
             Invoke-CommandWithLog "choco install nodejs --force -y" "Installing/updating Node.js via Chocolatey (force reinstall)"
-        } elseif (Test-CommandExists "scoop") {
+        }
+        elseif (Test-CommandExists "scoop") {
             Invoke-CommandWithLog "scoop install nodejs" "Installing/updating Node.js via Scoop"
-        } else {
+        }
+        else {
             # Fallback: Download from official site
             Write-Log "No package manager found. Downloading Node.js from official site..." "INFO"
             $nodeUrl = "https://nodejs.org/dist/latest/node-v*-win-x64.zip"
@@ -453,11 +469,13 @@ function Update-NodeJS {
             Invoke-CommandWithLog "Invoke-WebRequest -Uri '$nodeUrl' -OutFile '$tempPath'" "Downloading Node.js"
             Invoke-CommandWithLog "Expand-Archive -Path '$tempPath' -DestinationPath 'C:\Program Files\nodejs' -Force" "Installing Node.js"
         }
-    } else {
+    }
+    else {
         # macOS: Use Homebrew or NVM
         if (Test-CommandExists "brew") {
             Invoke-CommandWithLog "brew install --force node" "Installing/updating Node.js via Homebrew (force reinstall)"
-        } else {
+        }
+        else {
             Write-Log "Homebrew not available. Installing Node.js via NVM..." "INFO"
             Invoke-CommandWithLog 'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash' "Installing NVM (Node Version Manager)"
             Invoke-CommandWithLog 'source ~/.bashrc && nvm install node --latest-npm' "Installing latest Node.js via NVM"
@@ -498,7 +516,8 @@ function Update-Npm {
             $script:UpdatedNpmVersion = npm -v 2>$null
             Write-Log "npm installed/updated to: $UpdatedNpmVersion" "SUCCESS"
         }
-    } else {
+    }
+    else {
         Write-Log "npm update failed with force flag, trying without force..." "WARNING"
         # Try again without force flag as fallback
         if (Invoke-CommandWithLog "npm install -g npm@latest" "Installing/updating npm to latest version (without force)" $true) {
@@ -506,7 +525,8 @@ function Update-Npm {
                 $script:UpdatedNpmVersion = npm -v 2>$null
                 Write-Log "npm installed/updated to: $UpdatedNpmVersion" "SUCCESS"
             }
-        } else {
+        }
+        else {
             $currentVersion = npm -v 2>$null
             Write-Log "npm update failed completely. Current version: $currentVersion" "WARNING"
             $script:Warnings++
@@ -539,7 +559,8 @@ function Update-GeminiCLI {
             $script:UpdatedGeminiVersion = gemini --version 2>$null
             Write-Log "Gemini CLI installed/updated to: $UpdatedGeminiVersion" "SUCCESS"
         }
-    } else {
+    }
+    else {
         Write-Log "Gemini CLI update failed with force flag, trying without force..." "WARNING"
         # Try again without force flag as fallback
         if (Invoke-CommandWithLog "npm install -g @google/gemini-cli@latest" "Installing/updating Gemini CLI to latest version (without force)" $true) {
@@ -547,7 +568,8 @@ function Update-GeminiCLI {
                 $script:UpdatedGeminiVersion = gemini --version 2>$null
                 Write-Log "Gemini CLI installed/updated to: $UpdatedGeminiVersion" "SUCCESS"
             }
-        } else {
+        }
+        else {
             $currentVersion = gemini --version 2>$null
             Write-Log "Gemini CLI update failed completely. Current version: $currentVersion" "WARNING"
             $script:Warnings++
@@ -577,12 +599,14 @@ function Install-GeminiDependencies {
     # Install globally for CLI access (force reinstall)
     if (Invoke-CommandWithLog "npm install -g @google/generative-ai --force" "Installing/updating Google Generative AI package globally (force reinstall)" $true) {
         Write-Log "Google Generative AI package installed globally" "SUCCESS"
-    } else {
+    }
+    else {
         Write-Log "Google Generative AI install failed with force flag, trying without force..." "WARNING"
         # Try again without force flag as fallback
         if (Invoke-CommandWithLog "npm install -g @google/generative-ai" "Installing/updating Google Generative AI package globally (without force)" $true) {
             Write-Log "Google Generative AI package installed globally" "SUCCESS"
-        } else {
+        }
+        else {
             Write-Log "Google Generative AI install failed completely" "WARNING"
             $script:Warnings++
         }
@@ -592,11 +616,13 @@ function Install-GeminiDependencies {
     if (Test-Path "package.json") {
         if (Invoke-CommandWithLog "npm install @google/generative-ai --force" "Installing/updating Google Generative AI package locally (force reinstall)" $true) {
             Write-Log "Local project dependencies updated" "SUCCESS"
-        } else {
+        }
+        else {
             Write-Log "Local installation failed, trying without force..." "WARNING"
             Invoke-CommandWithLog "npm install @google/generative-ai" "Installing/updating Google Generative AI package locally (without force)" $true
         }
-    } else {
+    }
+    else {
         Write-Log "No package.json found - skipping local installation" "INFO"
     }
     
@@ -618,7 +644,8 @@ function Enable-IDEIntegration {
         
         # Note: IDE integration can be manually configured after script completion
         Write-Log "IDE integration can be configured manually after script completion" "INFO"
-    } else {
+    }
+    else {
         Write-Log "Gemini CLI not found - skipping IDE integration" "ERROR"
         $script:Errors++
     }
@@ -647,7 +674,8 @@ function Test-Installations {
     if (Test-CommandExists "node") {
         $currentNode = node -v 2>$null
         Write-Log "✓ Node.js: $currentNode" "SUCCESS"
-    } else {
+    }
+    else {
         Write-Log "✗ Node.js: Not found" "ERROR"
         $script:Errors++
     }
@@ -656,7 +684,8 @@ function Test-Installations {
     if (Test-CommandExists "npm") {
         $currentNpm = npm -v 2>$null
         Write-Log "✓ npm: $currentNpm" "SUCCESS"
-    } else {
+    }
+    else {
         Write-Log "✗ npm: Not found" "ERROR"
         $script:Errors++
     }
@@ -665,7 +694,8 @@ function Test-Installations {
     if (Test-CommandExists "gemini") {
         $currentGemini = gemini --version 2>$null
         Write-Log "✓ Gemini CLI: $currentGemini" "SUCCESS"
-    } else {
+    }
+    else {
         Write-Log "✗ Gemini CLI: Not found" "ERROR"
         $script:Errors++
     }
@@ -674,7 +704,8 @@ function Test-Installations {
     if (Test-CommandExists "gcloud") {
         $currentGcloud = gcloud version --format="value(Google Cloud SDK)" 2>$null
         Write-Log "✓ Google Cloud SDK: $currentGcloud" "SUCCESS"
-    } else {
+    }
+    else {
         Write-Log "✗ Google Cloud SDK: Not found" "ERROR"
         $script:Errors++
     }
@@ -689,12 +720,14 @@ function Test-GeminiCLI {
         Write-Log "Testing basic Gemini CLI command..." "DEBUG"
         if (Invoke-CommandWithLog "gemini ask 'Test connection - respond with OK'" "Testing Gemini CLI basic functionality" $true) {
             Write-Log "✓ Gemini CLI is functioning correctly" "SUCCESS"
-        } else {
+        }
+        else {
             Write-Log "⚠ Gemini CLI installed but may need API key configuration" "WARNING"
             Write-Log "Run 'gemini config' to set up your API key" "INFO"
             $script:Warnings++
         }
-    } else {
+    }
+    else {
         Write-Log "✗ Gemini CLI not found - functionality test skipped" "ERROR"
         $script:Errors++
     }
@@ -716,7 +749,7 @@ function New-Summary {
                     GEMINI CLI UPDATE SUMMARY
 =============================================================================
 Timestamp: $Timestamp
-Script Version: 3.0.1
+Script Version: 3.1.0
 Platform: $(if ($IsWindowsPlatform) { "Windows" } else { "macOS" })
 Log file: $LogFile
 
@@ -799,7 +832,7 @@ function Start-UpdateProcess {
                     CROSS-PLATFORM GEMINI CLI UPDATE SCRIPT
 =============================================================================
 Started: $Timestamp
-Script Version: 3.0.1
+Script Version: 3.1.0
 Platform: $(if ($IsWindowsPlatform) { "Windows" } else { "macOS" })
 Log file: $LogFile
 Verbose mode: $Verbose
@@ -829,7 +862,8 @@ Dry run mode: $DryRun
     # Update package managers
     if ($IsWindowsPlatform) {
         Update-WindowsPackageManagers
-    } else {
+    }
+    else {
         Update-MacOSPackageManagers
     }
     
@@ -870,7 +904,8 @@ Dry run mode: $DryRun
     if ($Errors -eq 0) {
         Write-Log "🎉 All updates completed successfully!" "SUCCESS"
         Write-Log "Your development environment is now up-to-date" "SUCCESS"
-    } else {
+    }
+    else {
         Write-Log "⚠️  Updates completed with $Errors error(s) and $Warnings warning(s)" "WARNING"
         Write-Log "Please review the log file for detailed information" "INFO"
     }
